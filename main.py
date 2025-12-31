@@ -1,7 +1,15 @@
 from pydantic import BaseModel
-from fastapi import FastAPI
+from fastapi import FastAPI,Depends
 
 app = FastAPI()
+
+#Dependency
+def get_current_user():
+    return {"username": "bhaskar", "role": "admin"}
+
+def common_headers():
+    return {"app": "fastapi-journey", "version": "day-3"}
+
 
 @app.get("/")
 def root():
@@ -43,9 +51,23 @@ class Login(BaseModel):
     email: str
     password: str
 
-@app.post("/Login")
-def Login(data :Login):
+@app.post("/login")
+def login(data :Login):
     return{
         "message":"User login Successful",
         "email":data.email
+    }
+
+@app.get("/profile")
+def profile(user: dict = Depends(get_current_user)):
+    return {
+        "message": "Profile accessed",
+        "user": user
+    }
+
+@app.get("/info")
+def info(headers: dict= Depends(common_headers)):
+    return{
+        "message":"Headers accessed",
+        "headers": headers
     }
