@@ -1,15 +1,22 @@
 from pydantic import BaseModel
-from fastapi import FastAPI,Depends
+from fastapi import FastAPI,Depends,Header,HTTPException,status
 
 app = FastAPI()
 
-#Dependency
-def get_current_user():
-    return {"username": "bhaskar", "role": "admin"}
 
-def common_headers():
+def common_headers(token: str = Header(...)):
+    if token !="my-token":
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,detail="Invalid or missing Token"
+        )
     return {"app": "fastapi-journey", "version": "day-3"}
 
+def get_current_user(token: str = Header(...)):
+    if token !="secret-token":
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,detail="Invalid or missing token"
+        )
+    return{"username": "bhaskar","role": "admin"}
 
 @app.get("/")
 def root():
@@ -61,13 +68,13 @@ def login(data :Login):
 @app.get("/profile")
 def profile(user: dict = Depends(get_current_user)):
     return {
-        "message": "Profile accessed",
+        "message": "Autherization profile access",
         "user": user
     }
 
 @app.get("/info")
 def info(headers: dict= Depends(common_headers)):
     return{
-        "message":"Headers accessed",
+        "message":"Authetrization Header access",
         "headers": headers
     }
