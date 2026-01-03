@@ -155,7 +155,9 @@ Protected routes verify token
 venv\Scripts\activate
 
 # Install dependencies
-pip install fastapi uvicorn python-jose passlib[bcrypt] python-multipart
+pip install fastapi uvicorn 
+python-jose passlib[bcrypt] 
+python-multipart
 
 # Run server
 uvicorn main:app --reload
