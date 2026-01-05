@@ -20,6 +20,12 @@ fake_user_db = {
         "email": "bhaskar@example.com",
         "hashed_password": "$2b$12$2ie3kibFP5IdiCFk9wJ8metH7juzSlp57gs/0Cbp0sHgM/f7cZTP2",  # password123
         "role": "admin"
+    },
+     "user@example.com": {
+        "username": "normaluser",
+        "email": "user@example.com",
+        "hashed_password": "$2b$12$RELGUZrYHw13vOdMa00yVOcJ8O3.0aEDu2f0Rz1xw5Y.wvpMkgTDi", #password123
+        "role": "user"
     }
 }
 
@@ -51,6 +57,13 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
     except JWTError:
         raise HTTPException(status_code=401, detail="Invalid token")
 
+def require_admin(user: dict = Depends(get_current_user)):
+    if user.get("role") != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin access required"
+        )
+    return user
 
 @app.get("/")
 def root():
@@ -118,4 +131,19 @@ def info(user: dict = Depends(get_current_user)):
     return {
         "message": "JWT authorized info access",
         "user": user
+    }
+
+@app.get("/admin/dashboard")
+def admin_dashboard(admin: dict = Depends(require_admin)):
+    return {
+        "message": "Welcome Admin",
+        "admin": admin["username"]
+    }
+
+@app.get("/me")
+def my_profile(user: dict = Depends(get_current_user)):
+    return {
+        "message": "User profile",
+        "user": user["username"],
+        "role": user["role"]
     }
