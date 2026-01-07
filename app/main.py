@@ -15,11 +15,14 @@ from app.core.security import (
     verify_password
 )
 
-app = FastAPI()
+app = FastAPI(
+    title="FastAPI Journey",
+    version="0.1.0"
+)
 
-# -------------------------------
-# Fake Database (Day-7)
-# -------------------------------
+# -------------------------------------------------
+# Fake Database (Day-7 → reused)
+# -------------------------------------------------
 fake_user_db = {
     "bhaskar@example.com": {
         "username": "bhaskar",
@@ -35,14 +38,31 @@ fake_user_db = {
     }
 }
 
-# -------------------------------
-# Auth helpers
-# -------------------------------
+# -------------------------------------------------
+# Schemas (NEW in Day-8)
+# -------------------------------------------------
+class TokenResponse(BaseModel):
+    access_token: str
+    token_type: str
+
+
+class UserResponse(BaseModel):
+    username: str
+    email: str
+    role: str
+
+
+# -------------------------------------------------
+# Auth Helpers
+# -------------------------------------------------
 def authenticate_user(email: str, password: str):
     user = fake_user_db.get(email)
-    if not user or not verify_password(password, user["hashed_password"]):
+    if not user:
+        return None
+    if not verify_password(password, user["hashed_password"]):
         return None
     return user
+
 
 def require_admin(user: dict = Depends(get_current_user)):
     if user.get("role") != "admin":
@@ -52,41 +72,55 @@ def require_admin(user: dict = Depends(get_current_user)):
         )
     return user
 
-# -------------------------------
+
+# -------------------------------------------------
 # Public Routes
-# -------------------------------
-@app.get("/")
+# -------------------------------------------------
+@app.get("/", tags=["Public"])
 def root():
     return {"message": "FastAPI 80/20 Journey Begins"}
 
-@app.get("/health")
+
+@app.get("/health", tags=["Public"])
 def health():
     return {"status": "OK", "service": "FastAPI"}
 
-@app.get("/hello/{name}")
+
+@app.get("/hello/{name}", tags=["Public"])
 def hello(name: str):
     return {"message": f"Hello {name}"}
 
-@app.get("/square/{number}")
+
+@app.get("/square/{number}", tags=["Public"])
 def square(number: int):
     return {"number": number, "square": number * number}
 
-@app.get("/about")
+
+@app.get("/about", tags=["Public"])
 def about():
     return {
         "name": "Bala",
         "learning": "FastAPI",
-        "day": 7
+        "day": 8
     }
 
-# -------------------------------
+
+# -------------------------------------------------
 # Auth Routes
-# -------------------------------
-@app.post("/login")
+# -------------------------------------------------
+@app.post(
+    "/login",
+    response_model=TokenResponse,
+    tags=["Authentication"]
+)
 def login(form_data: OAuth2PasswordRequestForm = Depends()):
     user = authenticate_user(form_data.username, form_data.password)
+
     if not user:
-        raise HTTPException(status_code=401, detail="Invalid credentials")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid credentials"
+        )
 
     access_token = create_access_token(
         data={"sub": user["email"]},
@@ -98,27 +132,41 @@ def login(form_data: OAuth2PasswordRequestForm = Depends()):
         "token_type": "bearer"
     }
 
-# -------------------------------
+
+# -------------------------------------------------
 # Protected Routes
-# -------------------------------
-@app.get("/profile")
+# -------------------------------------------------
+@app.get(
+    "/profile",
+    response_model=UserResponse,
+    tags=["User"]
+)
 def profile(user: dict = Depends(get_current_user)):
     return {
-        "message": "JWT authenticated profile",
-        "user": user
+        "username": user["username"],
+        "email": user["email"],
+        "role": user["role"]
     }
 
-@app.get("/me")
+
+@app.get(
+    "/me",
+    tags=["User"]
+)
 def my_profile(user: dict = Depends(get_current_user)):
     return {
         "username": user["username"],
         "role": user["role"]
     }
 
-# -------------------------------
-# Admin-only Route
-# -------------------------------
-@app.get("/admin/dashboard")
+
+# -------------------------------------------------
+# Admin Routes
+# -------------------------------------------------
+@app.get(
+    "/admin/dashboard",
+    tags=["Admin"]
+)
 def admin_dashboard(admin: dict = Depends(require_admin)):
     return {
         "message": "Welcome Admin",
