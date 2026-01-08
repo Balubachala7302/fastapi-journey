@@ -175,16 +175,320 @@ Answer:
 
 403 → Authorization problem
 
-🏆 Interview Readiness Verdict
+Perfect 👍
+Below is a clean, interview-ready README.md content covering Day-6 to Day-8, including concept questions + real errors you faced and their explanations.
 
-If you can explain:
+You can copy-paste this directly into README.md.
 
-JWT flow
 
-OAuth2 form-data requirement
+---
 
-Dependency-based security
+🚀 FastAPI Interview Preparation
 
-Errors faced and fixes applied
+Day-6 to Day-8 (Auth → JWT → Project Refactor)
 
-👉 You are interview-ready for FastAPI backend roles.
+
+---
+
+📅 Day-6: Dependency Injection & Authorization Basics
+
+1️⃣ What is Dependency Injection in FastAPI?
+
+Answer:
+Dependency Injection (DI) allows FastAPI to automatically provide required objects (like authenticated users, headers, DB sessions) to endpoints using Depends().
+
+def get_current_user():
+    return {"username": "bhaskar"}
+
+@app.get("/profile")
+def profile(user=Depends(get_current_user)):
+    return user
+
+
+---
+
+2️⃣ Why does FastAPI use Depends()?
+
+Answer:
+
+Code reuse
+
+Separation of concerns
+
+Cleaner and testable architecture
+
+
+
+---
+
+3️⃣ Difference between Authentication and Authorization?
+
+Authentication	Authorization
+
+Who you are	What you can access
+Login	Role / Permission
+JWT / OAuth	Admin, User, RBAC
+
+
+
+---
+
+4️⃣ How do you restrict access to an endpoint?
+
+Answer:
+By validating user role or permissions inside a dependency.
+
+def require_admin(user=Depends(get_current_user)):
+    if user["role"] != "admin":
+        raise HTTPException(status_code=403)
+
+
+---
+
+❌ Common Day-6 Error
+
+Error: 401 Unauthorized
+Reason: Missing dependency or invalid token
+Fix: Ensure Depends() is used and token is passed correctly.
+
+
+---
+
+📅 Day-7: JWT Authentication & Role-Based Access
+
+
+---
+
+5️⃣ What is JWT?
+
+Answer:
+JWT (JSON Web Token) is a signed token used to securely transmit user identity between client and server.
+
+Structure:
+
+HEADER.PAYLOAD.SIGNATURE
+
+
+---
+
+6️⃣ Why JWT is stateless?
+
+Answer:
+The server does not store sessions. All user data is inside the token.
+
+
+---
+
+7️⃣ What is OAuth2PasswordBearer?
+
+Answer:
+It tells FastAPI:
+
+Token comes from Authorization: Bearer <token>
+
+Used to extract JWT automatically
+
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
+
+
+---
+
+8️⃣ Difference between 401 and 403?
+
+Code	Meaning
+
+401	Not authenticated
+403	Authenticated but forbidden
+
+
+
+---
+
+9️⃣ How do you implement Admin-only access?
+
+Answer:
+
+def require_admin(user=Depends(get_current_user)):
+    if user["role"] != "admin":
+        raise HTTPException(status_code=403)
+
+
+---
+
+❌ Real Day-7 Errors You Faced
+
+Error: python-multipart not installed
+
+Reason:
+OAuth2 login uses form data.
+
+Fix:
+
+pip install python-multipart
+
+
+---
+
+Error: bcrypt has no attribute __about__
+
+Reason:
+Version conflict between bcrypt and passlib.
+
+Fix:
+
+pip install bcrypt==4.0.1 passlib==1.7.4
+
+
+---
+
+Error: Swagger shows Unauthorized after login
+
+Reason:
+Token not applied via Authorize button.
+
+Fix:
+Click Authorize → Paste Bearer token → Authorize
+
+
+---
+
+📅 Day-8: Project Refactor & APIRouter
+
+
+---
+
+🔟 Why refactor FastAPI projects?
+
+Answer:
+
+Maintainability
+
+Scalability
+
+Industry-standard structure
+
+Interview expectation
+
+
+
+---
+
+1️⃣1️⃣ What is APIRouter?
+
+Answer:
+APIRouter helps split routes into multiple files.
+
+router = APIRouter()
+
+@router.get("/profile")
+def profile():
+    pass
+
+
+---
+
+1️⃣2️⃣ How do you register routers?
+
+Answer:
+
+app.include_router(auth.router)
+
+
+---
+
+1️⃣3️⃣ What should main.py contain after refactor?
+
+Answer:
+ONLY:
+
+App initialization
+
+Router registration
+
+Health/root endpoints
+
+
+❌ No business logic
+❌ No auth logic
+
+
+---
+
+1️⃣4️⃣ Why separate core, api, models?
+
+Folder	Responsibility
+
+core	Config, security
+api	Routes
+models	Schemas
+
+
+
+---
+
+❌ Day-8 Git Errors & Fixes
+
+Error: Could not import module "main"
+
+Reason:
+main.py moved inside app/
+
+Fix:
+
+uvicorn app.main:app --reload
+
+
+---
+
+Error: deleted: main.py
+
+Reason:
+You moved main.py into app/
+
+Fix:
+
+git add app
+git commit -m "Refactor project structure"
+
+
+---
+
+Error: fatal: pathspec did not match
+
+Reason:
+File path changed after refactor.
+
+Fix:
+
+git status
+git add app/
+
+
+---
+
+🧠 Interview Power Questions (Direct)
+
+❓ Why FastAPI over Django/Flask?
+
+Async support
+
+Automatic docs
+
+Type safety
+
+Faster performance
+
+
+
+---
+
+❓ How would you scale this project?
+
+Database layer
+
+Pagination
+
+Background tasks
+
+Caching 
