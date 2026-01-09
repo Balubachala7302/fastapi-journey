@@ -2,45 +2,22 @@ from datetime import timedelta
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from pydantic import BaseModel
+from sqlalchemy.orm import Session
 
-from app.core.config import (
-    SECRET_KEY,
-    ALGORITHM,
-    ACCESS_TOKEN_EXPIRE_MINUTES
-)
+from app.db.database import engine, get_db
+from app.db import models, crud
+from app.core.config import ACCESS_TOKEN_EXPIRE_MINUTES
+from app.core.security import create_access_token, get_current_user
+from app.db.schemas import UserCreate,UserOut
 
-from app.core.security import (
-    create_access_token,
-    get_current_user,
-    verify_password
-)
+models.Base.metadata.create_all(bind=engine)
 
-app = FastAPI(
-    title="FastAPI Journey",
-    version="0.1.0"
-)
+app = FastAPI(title="FastAPI Journey", version="0.1.0")
 
-# -------------------------------------------------
-# Fake Database (Day-7 → reused)
-# -------------------------------------------------
-fake_user_db = {
-    "bhaskar@example.com": {
-        "username": "bhaskar",
-        "email": "bhaskar@example.com",
-        "hashed_password": "$2b$12$2ie3kibFP5IdiCFk9wJ8metH7juzSlp57gs/0Cbp0sHgM/f7cZTP2",
-        "role": "admin"
-    },
-    "user@example.com": {
-        "username": "normaluser",
-        "email": "user@example.com",
-        "hashed_password": "$2b$12$RELGUZrYHw13vOdMa00yVOcJ8O3.0aEDu2f0Rz1xw5Y.wvpMkgTDi",
-        "role": "user"
-    }
-}
 
-# -------------------------------------------------
-# Schemas (NEW in Day-8)
-# -------------------------------------------------
+# -------------------------------
+# Schemas
+# -------------------------------
 class TokenResponse(BaseModel):
     access_token: str
     token_type: str
@@ -52,69 +29,27 @@ class UserResponse(BaseModel):
     role: str
 
 
-# -------------------------------------------------
-# Auth Helpers
-# -------------------------------------------------
-def authenticate_user(email: str, password: str):
-    user = fake_user_db.get(email)
-    if not user:
-        return None
-    if not verify_password(password, user["hashed_password"]):
-        return None
-    return user
-
-
-def require_admin(user: dict = Depends(get_current_user)):
-    if user.get("role") != "admin":
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Admin access required"
-        )
-    return user
-
-
-# -------------------------------------------------
+# -------------------------------
 # Public Routes
-# -------------------------------------------------
-@app.get("/", tags=["Public"])
+# -------------------------------
+@app.get("/")
 def root():
     return {"message": "FastAPI 80/20 Journey Begins"}
 
-
-@app.get("/health", tags=["Public"])
+@app.get("/health")
 def health():
     return {"status": "OK", "service": "FastAPI"}
 
 
-@app.get("/hello/{name}", tags=["Public"])
-def hello(name: str):
-    return {"message": f"Hello {name}"}
-
-
-@app.get("/square/{number}", tags=["Public"])
-def square(number: int):
-    return {"number": number, "square": number * number}
-
-
-@app.get("/about", tags=["Public"])
-def about():
-    return {
-        "name": "Bala",
-        "learning": "FastAPI",
-        "day": 8
-    }
-
-
-# -------------------------------------------------
-# Auth Routes
-# -------------------------------------------------
-@app.post(
-    "/login",
-    response_model=TokenResponse,
-    tags=["Authentication"]
-)
-def login(form_data: OAuth2PasswordRequestForm = Depends()):
-    user = authenticate_user(form_data.username, form_data.password)
+# -------------------------------
+# Auth Routes (DB-backed)
+# -------------------------------
+@app.post("/login", response_model=TokenResponse)
+def login(
+    form_data: OAuth2PasswordRequestForm = Depends(),
+    db: Session = Depends(get_db)
+):
+    user = crud.authenticate_user(db, form_data.username, form_data.password)
 
     if not user:
         raise HTTPException(
@@ -123,52 +58,39 @@ def login(form_data: OAuth2PasswordRequestForm = Depends()):
         )
 
     access_token = create_access_token(
-        data={"sub": user["email"]},
+        data={"sub": user.email},
         expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     )
 
-    return {
-        "access_token": access_token,
-        "token_type": "bearer"
-    }
+    return {"access_token": access_token, "token_type": "bearer"}
+
+@app.post("/register", response_model=UserOut)
+def register_user(
+    user: UserCreate,
+    db: Session = Depends(get_db)
+):
+    existing = crud.get_user_by_email(db, user.email)
+    if existing:
+        raise HTTPException(
+            status_code=400,
+            detail="Email already registered"
+        )
+
+    return crud.create_user(
+        db=db,
+        username=user.username,
+        email=user.email,
+        password=user.password
+    )
 
 
-# -------------------------------------------------
+# -------------------------------
 # Protected Routes
-# -------------------------------------------------
-@app.get(
-    "/profile",
-    response_model=UserResponse,
-    tags=["User"]
-)
-def profile(user: dict = Depends(get_current_user)):
+# -------------------------------
+@app.get("/me", response_model=UserResponse)
+def my_profile(user: models.User = Depends(get_current_user)):
     return {
-        "username": user["username"],
-        "email": user["email"],
-        "role": user["role"]
-    }
-
-
-@app.get(
-    "/me",
-    tags=["User"]
-)
-def my_profile(user: dict = Depends(get_current_user)):
-    return {
-        "username": user["username"],
-        "role": user["role"]
-    }
-
-
-# -------------------------------------------------
-# Admin Routes
-# -------------------------------------------------
-@app.get(
-    "/admin/dashboard",
-    tags=["Admin"]
-)
-def admin_dashboard(admin: dict = Depends(require_admin)):
-    return {
-        "message": "Welcome Admin",
-        "admin": admin["username"]
+        "username": user.username,
+        "email": user.email,
+        "role": user.role
     }
