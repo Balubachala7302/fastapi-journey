@@ -1,4 +1,5 @@
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy.orm import relationship
 from app.db.database import Base
 
 class User(Base):
@@ -9,3 +10,23 @@ class User(Base):
     email = Column(String, unique=True, index=True)
     hashed_password = Column(String)
     role = Column(String, default="user")
+
+    posts = relationship(
+        "Post",
+        back_populates="owner",
+        cascade="all, delete"
+    )
+
+
+class Post(Base):
+    __tablename__ = "posts"
+
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String, index=True)
+    content = Column(String)
+    owner_id = Column(Integer, ForeignKey("users.id"))
+
+    owner = relationship(
+        "User",
+        back_populates="posts"
+    )

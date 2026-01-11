@@ -12,3 +12,18 @@ class UserOut(BaseModel):
     role: str
 
     model_config=ConfigDict(from_attributes=True)
+
+
+class PostCreate(BaseModel):
+    title: str
+    content: str
+
+class PostOut(BaseModel):
+    id: int
+    title: str
+    content: str
+
+    model_config = {
+        "from_attributes": True
+    }
+

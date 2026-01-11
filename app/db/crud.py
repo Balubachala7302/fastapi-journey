@@ -52,3 +52,30 @@ def authenticate_user(
         return None
 
     return user
+
+def create_post(
+    db: Session,
+    title: str,
+    content: str,
+    owner_id: int
+):
+    post = models.Post(
+        title=title,
+        content=content,
+        owner_id=owner_id
+    )
+    db.add(post)
+    db.commit()
+    db.refresh(post)
+    return post
+
+
+def get_posts_by_user(
+    db: Session,
+    user_id: int
+):
+    return (
+        db.query(models.Post)
+        .filter(models.Post.owner_id == user_id)
+        .all()
+    )

@@ -9,6 +9,7 @@ from app.db import models, crud
 from app.core.config import ACCESS_TOKEN_EXPIRE_MINUTES
 from app.core.security import create_access_token, get_current_user
 from app.db.schemas import UserCreate,UserOut
+from app.db.schemas import PostCreate,PostOut
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -94,3 +95,24 @@ def my_profile(user: models.User = Depends(get_current_user)):
         "email": user.email,
         "role": user.role
     }
+
+@app.post("/posts", response_model=PostOut)
+def create_post(
+    post: PostCreate,
+    db: Session = Depends(get_db),
+    user = Depends(get_current_user)
+):
+    return crud.create_post(
+        db=db,
+        title=post.title,
+        content=post.content,
+        owner_id=user.id
+    )
+
+
+@app.get("/posts/me", response_model=list[PostOut])
+def my_posts(
+    db: Session = Depends(get_db),
+    user = Depends(get_current_user)
+):
+    return crud.get_posts_by_user(db, user.id)
