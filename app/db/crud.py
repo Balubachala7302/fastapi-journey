@@ -53,6 +53,13 @@ def authenticate_user(
 
     return user
 
+def get_post_by_id(db:Session,post_id:int):
+    return(
+        db.query(models.Post)
+        .filter(models.Post.id == post_id)
+        .first()
+    )
+
 def create_post(
     db: Session,
     title: str,
@@ -79,3 +86,7 @@ def get_posts_by_user(
         .filter(models.Post.owner_id == user_id)
         .all()
     )
+
+def delete_post(db:Session,post:models.Post):
+    db.delete(post)
+    db.commit()

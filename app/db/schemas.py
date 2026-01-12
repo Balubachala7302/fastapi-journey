@@ -23,7 +23,5 @@ class PostOut(BaseModel):
     title: str
     content: str
 
-    model_config = {
-        "from_attributes": True
-    }
+    model_config=ConfigDict(from_attributes=True)
 

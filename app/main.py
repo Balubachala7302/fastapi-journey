@@ -11,6 +11,7 @@ from app.core.security import create_access_token, get_current_user
 from app.db.schemas import UserCreate,UserOut
 from app.db.schemas import PostCreate,PostOut
 
+
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="FastAPI Journey", version="0.1.0")
@@ -116,3 +117,21 @@ def my_posts(
     user = Depends(get_current_user)
 ):
     return crud.get_posts_by_user(db, user.id)
+
+@app.delete("/posts/{post_id}")
+def delete_post(
+    post_id: int,
+    db: Session = Depends(get_db),
+    user = Depends(get_current_user)   # ✅ user injected
+):
+    post = crud.get_post_by_id(db, post_id)
+
+    if not post:
+        raise HTTPException(status_code=404,detail="Post Not Found")
+
+    if post.owner_id != user.id and user.role != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not allowed"
+        )
+    crud.delete_post(db.post)
