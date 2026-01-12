@@ -18,23 +18,9 @@ Passlib (bcrypt)
 
 OAuth2 (Password Flow)
 
-📂 Project Structure (Day-8)
-Fastapi-Journey/
-│
-├── app/
-│   ├── main.py              # Application entry point
-│   ├── core/
-│   │   ├── config.py        # App configuration
-│   │   └── security.py      # JWT & password security
-│   ├── api/
-│   │   ├── auth.py          # Authentication routes
-│   │   ├── users.py         # User routes
-│   │   └── admin.py         # Admin-only routes
-│
-├── .env                     # Environment variables
-├── .gitignore
-├── venv/                    # Virtual environment (ignored)
-└── README.md
+📂 Project Structure (Day-9)
+<img width="667" height="349" alt="image" src="https://github.com/user-attachments/assets/9fd71063-0f70-4e39-a2f0-868ec0ed7194" />
+
 
 🟢 Day 1 – FastAPI Basics
 Concepts Covered
