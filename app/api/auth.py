@@ -1,21 +1,44 @@
-from fastapi import APIRouter, Depends, HTTPException
-from fastapi.security import OAuth2PasswordRequestForm
 from datetime import timedelta
+from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordRequestForm
+from sqlalchemy.orm import Session
 
-from app.core.security import create_access_token
-from app.main import authenticate_user
 from app.core.config import ACCESS_TOKEN_EXPIRE_MINUTES
+from app.core.security import create_access_token
+from app.db.database import get_db
+from app.db import crud
+from app.db.schemas import TokenResponse
 
-router = APIRouter(tags=["Auth"])
+router = APIRouter(
+    prefix="/auth",
+    tags=["Authentication"]
+)
 
-@router.post("/login")
-def login(form_data: OAuth2PasswordRequestForm = Depends()):
-    user = authenticate_user(form_data.username, form_data.password)
+@router.post(
+    "/login",
+    response_model=TokenResponse
+)
+def login(
+    form_data: OAuth2PasswordRequestForm = Depends(),
+    db: Session = Depends(get_db)
+):
+    """
+    Authenticate user and return JWT token
+    """
+    user = crud.authenticate_user(
+        db=db,
+        email=form_data.username,
+        password=form_data.password
+    )
+
     if not user:
-        raise HTTPException(status_code=401, detail="Invalid credentials")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid email or password"
+        )
 
     access_token = create_access_token(
-        data={"sub": user["email"]},
+        data={"sub": user.email},
         expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     )
 

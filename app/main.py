@@ -10,11 +10,15 @@ from app.core.config import ACCESS_TOKEN_EXPIRE_MINUTES
 from app.core.security import create_access_token, get_current_user
 from app.db.schemas import UserCreate,UserOut
 from app.db.schemas import PostCreate,PostOut
-
+from app.api import auth
+from fastapi.responses import JSONResponse
+from fastapi import Request
 
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="FastAPI Journey", version="0.1.0")
+
+app.include_router(auth.router)
 
 
 # -------------------------------
@@ -135,3 +139,14 @@ def delete_post(
             detail="Not allowed"
         )
     crud.delete_post(db.post)
+
+
+@app.exception_handler(HTTPException)
+async def custom_http_exception_handler(request: Request, exc: HTTPException):
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={
+            "error": exc.detail,
+            "path": request.url.path
+        }
+    )
