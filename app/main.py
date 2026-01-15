@@ -10,7 +10,7 @@ from app.core.config import ACCESS_TOKEN_EXPIRE_MINUTES
 from app.core.security import create_access_token, get_current_user
 from app.db.schemas import UserCreate,UserOut
 from app.db.schemas import PostCreate,PostOut
-from app.api import auth
+from app.api import auth,users
 from fastapi.responses import JSONResponse
 from fastapi import Request
 
@@ -19,6 +19,7 @@ models.Base.metadata.create_all(bind=engine)
 app = FastAPI(title="FastAPI Journey", version="0.1.0")
 
 app.include_router(auth.router)
+app.include_router(users.router)
 
 
 # -------------------------------
@@ -50,26 +51,6 @@ def health():
 # -------------------------------
 # Auth Routes (DB-backed)
 # -------------------------------
-@app.post("/login", response_model=TokenResponse)
-def login(
-    form_data: OAuth2PasswordRequestForm = Depends(),
-    db: Session = Depends(get_db)
-):
-    user = crud.authenticate_user(db, form_data.username, form_data.password)
-
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid credentials"
-        )
-
-    access_token = create_access_token(
-        data={"sub": user.email},
-        expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    )
-
-    return {"access_token": access_token, "token_type": "bearer"}
-
 @app.post("/register", response_model=UserOut)
 def register_user(
     user: UserCreate,
@@ -82,12 +63,7 @@ def register_user(
             detail="Email already registered"
         )
 
-    return crud.create_user(
-        db=db,
-        username=user.username,
-        email=user.email,
-        password=user.password
-    )
+    return crud.create_user(db,user)
 
 
 # -------------------------------

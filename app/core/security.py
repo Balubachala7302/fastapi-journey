@@ -75,3 +75,6 @@ def get_current_user(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid token"
         )
+
+def create_refresh_token(data:dict):
+    return jwt.encode(data,SECRET_KEY,algorithm=ALGORITHM)

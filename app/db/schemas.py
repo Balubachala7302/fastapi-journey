@@ -11,7 +11,8 @@ class UserOut(BaseModel):
     email: EmailStr
     role: str
 
-    model_config=ConfigDict(from_attributes=True)
+    class config:
+        from_attributes=True
 
 
 class PostCreate(BaseModel):

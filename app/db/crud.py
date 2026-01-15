@@ -1,28 +1,20 @@
 from sqlalchemy.orm import Session
 from app.db import models
-from app.core.security import verify_password, hash_password
+from app.db.schemas import UserCreate
+from app.core.security import hash_password,verify_password
 
 
-# -------------------------------
-# Create User
-# -------------------------------
-def create_user(
-    db: Session,
-    username: str,
-    email: str,
-    password: str,
-    role: str = "user"
-):
-    user = models.User(
-        username=username,
-        email=email,
-        hashed_password=hash_password(password),
-        role=role
+def create_user(db: Session, user: UserCreate):
+    db_user = models.User(
+        username=user.username,
+        email=user.email,
+        hashed_password=hash_password(user.password),
+        role="user"
     )
-    db.add(user)
+    db.add(db_user)
     db.commit()
-    db.refresh(user)
-    return user
+    db.refresh(db_user)
+    return db_user
 
 
 # -------------------------------
@@ -90,3 +82,28 @@ def get_posts_by_user(
 def delete_post(db:Session,post:models.Post):
     db.delete(post)
     db.commit()
+
+
+def create_refresh_token(db,token:str,user_id:int):
+    db_token=models.RefreshToken(
+        token=token,
+        user_id=user_id
+    )
+    db.add(db_token)
+    db.commit()
+    return db_token
+
+
+def get_refresh_token(db,token:str):
+    return (
+        db.query(models.RefreshToken)
+        .filter(models.RefreshToken.token==token)
+        .first()
+        )
+
+def delete_refresh_token(db,token:str):
+    db_token=get_refresh_token(db,token)
+    if db_token:
+        db.delete(db_token)
+        db.commit()
+
