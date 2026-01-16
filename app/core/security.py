@@ -77,4 +77,6 @@ def get_current_user(
         )
 
 def create_refresh_token(data:dict):
+    expire=datetime.utcnow()+timedelta(days=7)
+    data.update({"exp":expire,"type":"refresh"})
     return jwt.encode(data,SECRET_KEY,algorithm=ALGORITHM)

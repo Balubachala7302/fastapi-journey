@@ -59,11 +59,15 @@ def login(
 ):
     user = crud.authenticate_user(
         db,
-        form_data.username,
-        form_data.password
+        email=form_data.username,
+        password=form_data.password
     )
+
     if not user:
-        raise HTTPException(status_code=401, detail="Invalid credentials")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid credentials"
+        )
 
     access_token = create_access_token(
         data={"sub": user.email}
@@ -73,13 +77,12 @@ def login(
         data={"sub": user.email}
     )
 
-    crud.create_refresh_token(db, refresh_token, user.id)
-
     return {
         "access_token": access_token,
         "refresh_token": refresh_token,
         "token_type": "bearer"
     }
+
 
 @router.post("/refresh")
 def refresh_token(
