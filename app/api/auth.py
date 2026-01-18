@@ -1,6 +1,7 @@
 from datetime import timedelta
 from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordRequestForm,OAuth2PasswordBearer
+from fastapi.security import OAuth2PasswordRequestForm,OAuth2PasswordBearer 
+from app.core.security import get_current_user
 from sqlalchemy.orm import Session
 
 from app.core.config import ACCESS_TOKEN_EXPIRE_MINUTES,SECRET_KEY,ALGORITHM
@@ -120,3 +121,7 @@ def refresh_access_token(token: str = Depends(oauth2_scheme)):
 def logout(refresh_token: str, db: Session = Depends(get_db)):
     crud.delete_refresh_token(db, refresh_token)
     return {"message": "Logged out successfully"}
+
+@router.get("/me")
+def get_me(current_user=Depends(get_current_user)):
+    return current_user
