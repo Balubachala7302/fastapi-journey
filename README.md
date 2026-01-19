@@ -1,242 +1,223 @@
-🚀 FastAPI Journey
+# 🚀 FastAPI Journey (Day 1 – Day 15)
+
+This repository documents my **15-day hands-on FastAPI learning journey**, where I built a complete backend application with **authentication, authorization, database integration, and JWT security**.
+
+By the end of Day 15, the project includes:
+- User registration & login
+- JWT authentication
+- Protected routes
+- Refresh tokens
+- SQLite database with SQLAlchemy
+- Clean project structure
 
-This repository documents my FastAPI learning journey following the 80/20 principle — focusing on the most practical concepts required for backend development, real projects, and interviews.
+---
 
-📌 Tech Stack
+## 🛠 Tech Stack
 
-Python 3.11
+- **Python 3.11**
+- **FastAPI**
+- **Uvicorn**
+- **SQLAlchemy**
+- **SQLite**
+- **Pydantic v2**
+- **JWT (python-jose)**
+- **Passlib (bcrypt)**
 
-FastAPI
+---
 
-Pydantic
+## 📁 Project Structure
 
-Uvicorn
+app/
+├── api/
+│ ├── auth.py
+│ ├── users.py
+│
+├── core/
+│ ├── config.py
+│ ├── security.py
+│
+├── db/
+│ ├── crud.py
+│ ├── database.py
+│ ├── models.py
+│ ├── schemas.py
+│
+├── main.py
+fastapi.db
 
-JWT (python-jose)
 
-Passlib (bcrypt)
+---
 
-OAuth2 (Password Flow)
+## 📅 Day-wise Learning Breakdown
 
-📂 Project Structure (Day-9)
-<img width="667" height="349" alt="image" src="https://github.com/user-attachments/assets/9fd71063-0f70-4e39-a2f0-868ec0ed7194" />
+---
 
+### ✅ Day 1 – FastAPI Basics
+- What is FastAPI
+- Project setup
+- First FastAPI app
+- Running server with `uvicorn`
+- `/` root endpoint
 
-🟢 Day 1 – FastAPI Basics
-Concepts Covered
+---
 
-Creating a FastAPI app
+### ✅ Day 2 – Routing & HTTP Methods
+- GET, POST endpoints
+- Path & query parameters
+- Request & response basics
 
-Basic GET endpoints
+---
 
-Path parameters
+### ✅ Day 3 – Pydantic Schemas
+- Request body validation
+- Response models
+- Introduction to `BaseModel`
 
-JSON responses
+---
 
-Swagger UI (/docs)
+### ✅ Day 4 – Database Basics
+- SQLite introduction
+- SQLAlchemy setup
+- Engine & session creation
 
-Endpoints
+---
 
-/ – Root endpoint
+### ✅ Day 5 – Models & Tables
+- SQLAlchemy models
+- Creating tables
+- ORM fundamentals
 
-/health – Health check
+---
 
-/hello/{name} – Path parameter example
+### ✅ Day 6 – CRUD Operations
+- Create user
+- Read user
+- Database session handling
+- `crud.py` introduction
 
-/square/{number} – Simple logic API
+---
 
-🟡 Day 2 – Project Setup & Git
-Concepts Covered
+### ✅ Day 7 – Password Security
+- Password hashing with `passlib`
+- Hash vs verify password
+- Never storing plain passwords
 
-Virtual environment setup
+---
 
-.gitignore
+### ✅ Day 8 – User Registration
+- `/register` endpoint
+- Email uniqueness check
+- Database persistence
 
-Git init, add, commit
+---
 
-Pushing project to GitHub
+### ✅ Day 9 – Authentication Basics
+- OAuth2PasswordBearer
+- Swagger authentication flow
+- Common auth errors (401, 403)
 
-GitHub authentication (browser-based)
+> ⚠️ Faced many errors here – **completely normal**
 
-🟠 Day 3 – Pydantic & Dependencies
-Concepts Covered
+---
 
-Request body with Pydantic models
+### ✅ Day 10 – Login Endpoint
+- `/login` endpoint
+- Email + password validation
+- Returning JWT access token
 
-POST requests
+---
 
-Dependency Injection using Depends
+### ✅ Day 11 – JWT Tokens
+- Creating JWT tokens
+- `sub` claim usage
+- Token expiration handling
 
-Header-based dependencies
+---
 
-Shared reusable logic
+### ✅ Day 12 – Authorization
+- Protecting routes
+- `Depends(get_current_user)`
+- Understanding request lifecycle
 
-Endpoints
+---
 
-/users – Create user (Pydantic model)
+### ✅ Day 13 – Refresh Tokens
+- Refresh token concept
+- `/refresh` endpoint
+- Generating new access tokens
 
-/login – Basic login
+---
 
-/profile – Dependency-protected route
+### ✅ Day 14 – Debugging & Fixes
+- Fixed schema mismatches
+- Fixed CRUD signature issues
+- Learned to read stack traces properly
 
-/info – Header-based dependency
+---
 
-🔵 Day 4 – Authorization & Headers
-Concepts Covered
+### ✅ Day 15 – Final Integration 🎯
+- `get_current_user` dependency
+- Protected `/me` endpoint
+- Swagger authorization working
+- End-to-end authentication flow complete
 
-Custom request headers
+---
 
-Header validation
+## 🔐 Authentication Flow
 
-Raising HTTPException
+1. **Register User**
 
-Authorization using headers
+POST /users/register
 
-Clean dependency-based security logic
 
-🔴 Day 5 – JWT Authentication (Major Milestone)
-Concepts Covered
+2. **Login**
 
-Password hashing with bcrypt
 
-JWT creation & verification
+POST /auth/login
+→ returns access_token
 
-OAuth2 Password Flow
 
-Token-based authentication
+3. **Authorize in Swagger**
 
-Protecting routes with JWT
-
-Swagger UI authorization flow
-
-Security Stack
-
-OAuth2PasswordBearer
-
-OAuth2PasswordRequestForm
-
-python-jose
-
-passlib[bcrypt]
-
-Endpoints
-
-/login – Generates JWT access token
-
-/profile – JWT-protected endpoint
-
-/info – JWT-protected endpoint
-
-🔐 Authentication Flow (Day 5)
-
-User logs in via /login
-
-Server validates credentials
-
-JWT access token is generated
-
-Token is sent as:
 
 Authorization: Bearer <token>
 
 
-Protected routes validate the token
+4. **Access Protected Route**
 
-🟣 Day 6 – Authorization & Access Control
-Concepts Covered
 
-Authentication vs Authorization
+GET /auth/me
 
-Securing routes with dependencies
 
-Handling 401 Unauthorized vs 403 Forbidden
+---
 
-Clean authorization checks
+## 🧪 Run the Project
 
-🟤 Day 7 – Role-Based Access Control (RBAC) & Refactor
-Concepts Covered
-
-Admin vs User roles
-
-Role-based route protection
-
-Reusable authorization dependencies
-
-Refactoring project into modules
-
-Separating config & security logic
-
-Production-style folder structure
-
-Key Features
-
-Admin-only routes
-
-JWT + role validation
-
-Clean main.py
-
-⚫ Day 8 – Clean Architecture & APIRouter
-Concepts Covered
-
-Modular routing using APIRouter
-
-Feature-based route separation
-
-Thin main.py
-
-Clean API grouping
-
-Interview-ready FastAPI architecture
-
-Benefits
-
-Scalable codebase
-
-Easy maintenance
-
-Real-world backend structure
-
-▶️ How to Run the Project
+```bash
 # Activate virtual environment
 venv\Scripts\activate
 
-# Install dependencies
-pip install fastapi uvicorn python-jose passlib[bcrypt] python-multipart
-
-# Run the server
+# Start server
 uvicorn app.main:app --reload
 
-Open:
 
-Swagger UI → http://127.0.0.1:8000/docs
+Swagger UI:
 
-OpenAPI JSON → http://127.0.0.1:8000/openapi.json
+http://127.0.0.1:8000/docs
 
-🎯 Why This Repository Matters
+📌 Key Learnings
 
-Covers interview-level FastAPI concepts
+How real backend authentication works
 
-Incremental, structured learning
+Debugging FastAPI errors confidently
 
-Authentication + Authorization included
+Clean backend architecture
 
-Clean architecture & best practices
+JWT-based security
 
-Strong backend foundation
+Industry-level FastAPI structure
 
-🧠 Next Planned Topics
+🏁 Status
 
-Refresh tokens
-
-Database integration (SQLAlchemy / SQLModel)
-
-Async DB sessions
-
-Advanced dependency injection
-
-Environment-based configuration
-
-Docker & deployment
-
-Production security best practices
+✅ Day 15 Completed Successfully
+🚀 Ready for advanced backend development
