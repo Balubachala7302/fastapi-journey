@@ -1,494 +1,289 @@
-This section contains interview-ready questions and answers based on my FastAPI 80/20 learning journey, including real errors faced and fixed during development.
+# 🚀 FastAPI Interview Preparation (Day 1 – Day 15)
+**80/20 Learning + Real Errors Faced & Fixed**
 
-🟢 Day-1: FastAPI Basics
-1️⃣ What is FastAPI?
+This document contains interview-ready questions and answers based on my 15-day FastAPI learning journey, including real errors I faced and fixed during development.
 
-Answer:
+---
+
+## 🟢 Day-1: FastAPI Basics
+
+### 1. What is FastAPI?
 FastAPI is a modern, high-performance Python web framework used to build APIs with automatic validation, type hints, and interactive documentation.
 
-2️⃣ Why is FastAPI fast?
+### 2. Why is FastAPI fast?
+- Built on Starlette (ASGI)
+- Uses Pydantic for validation
+- Async-first architecture
 
-Answer:
-FastAPI is built on Starlette and Pydantic, uses ASGI, and leverages Python type hints for efficient request handling.
+### 3. What is Swagger UI?
+Swagger UI provides interactive API documentation.  
+Access it at:
 
-3️⃣ What is Swagger UI and how do you access it?
+/docs
 
-Answer:
-Swagger UI provides interactive API documentation and can be accessed at /docs.
+ 
+### 4. What are path parameters?
+Dynamic values passed through the URL path.
+Example:
+/square/{number}
 
-4️⃣ What are path parameters?
+yaml
+Copy code
 
-Answer:
-Path parameters are dynamic values passed through the URL path, e.g. /square/{number}.
+### 5. Difference between GET and POST?
+- GET → Fetch data
+- POST → Send data to server
 
-5️⃣ Difference between GET and POST?
+---
 
-Answer:
+## 🟡 Day-2: Request Body & Pydantic
 
-GET → Fetch data
+### 6. What is Pydantic?
+Pydantic validates request data using Python type hints and returns structured errors automatically.
 
-POST → Send data to server (usually request body)
+### 7. What happens if invalid data is sent?
+FastAPI returns:
+422 Unprocessable Entity
 
-🟡 Day-2: Request Body & Pydantic
-6️⃣ What is Pydantic and why does FastAPI use it?
+yaml
+Copy code
 
-Answer:
-Pydantic validates request data using Python type hints and automatically returns structured error responses.
+### 8. What is request body?
+JSON data sent from the client for POST/PUT requests.
 
-7️⃣ What happens if invalid data is sent?
+### 9. Advantage of automatic validation?
+- Less manual checks
+- Safer APIs
+- Clean contracts
 
-Answer:
-FastAPI automatically returns a 422 Unprocessable Entity error with validation details.
+---
 
-8️⃣ What is request body?
+## 🟠 Day-3: Dependency Injection (Depends)
 
-Answer:
-Request body is data sent by the client (usually JSON) for POST/PUT requests.
+### 10. What is dependency injection?
+FastAPI runs shared logic before executing routes using `Depends()`.
 
-9️⃣ Advantage of automatic validation?
+### 11. Why use Depends()?
+- Code reuse
+- Cleaner routes
+- Testability
 
-Answer:
-Reduces manual checks, improves reliability, and ensures clean API contracts.
+### 12. Can dependencies be reused?
+Yes, across multiple endpoints.
 
-🟠 Day-3: Dependency Injection (Depends)
-🔟 What is dependency injection in FastAPI?
+### 13. What happens if a dependency fails?
+FastAPI stops execution and returns the error immediately.
 
-Answer:
-Dependency injection allows FastAPI to automatically provide required logic (like auth, headers, DB sessions) before route execution.
+---
 
-1️⃣1️⃣ Why use Depends()?
+## 🔵 Day-4: Authorization & Headers
 
-Answer:
-To keep routes clean, reusable, testable, and scalable.
+### 14. What is authorization?
+Authorization checks what an authenticated user can access.
 
-1️⃣2️⃣ Can dependencies be reused?
+### 15. How did you implement authorization?
+Using `Depends()` and raising `HTTPException`.
 
-Answer:
-Yes. A single dependency can be injected into multiple routes.
+### 16. Difference between 401 and 403?
+- 401 → Authentication failed
+- 403 → Authenticated but forbidden
 
-1️⃣3️⃣ What happens if a dependency fails?
+### 17. Why protected endpoints don’t open in browser?
+Browsers don’t send Authorization headers automatically.
 
-Answer:
-FastAPI stops execution and immediately returns an error response.
+---
 
-🔵 Day-4: Authorization & Headers
-1️⃣4️⃣ What is authorization?
+## 🔴 Day-5: OAuth2 & JWT Authentication
 
-Answer:
-Authorization checks whether an authenticated user has permission to access a resource.
+### 18. What is JWT?
+JWT is a stateless authentication mechanism.
 
-1️⃣5️⃣ How did you implement authorization?
+### 19. What does JWT contain?
+- Header
+- Payload (`sub`, `exp`)
+- Signature
 
-Answer:
-Using header-based validation via Depends() and raising HTTPException on failure.
+### 20. Why is JWT stateless?
+All auth data is inside the token, not stored on the server.
 
-1️⃣6️⃣ Why return 401 instead of 403?
+### 21. What is OAuth2PasswordBearer?
+Extracts the Bearer token from Authorization header.
 
-Answer:
+### 22. Why OAuth2 uses form-data?
+OAuth2 spec requires `application/x-www-form-urlencoded`.
 
-401 → Authentication failed or missing
-
-403 → Authenticated but not permitted
-
-1️⃣7️⃣ Why doesn’t a protected endpoint open in the browser?
-
-Answer:
-Because browsers do not send custom headers like Authorization tokens.
-
-🔴 Day-5: JWT & OAuth2 Authentication
-1️⃣8️⃣ What is JWT?
-
-Answer:
-JWT (JSON Web Token) is a stateless authentication mechanism that securely transfers user identity between client and server.
-
-1️⃣9️⃣ What does a JWT contain?
-
-Answer:
-
-Header
-
-Payload (claims like sub, exp)
-
-Signature
-
-2️⃣0️⃣ Why is JWT stateless?
-
-Answer:
-Because all authentication data is stored in the token itself, not on the server.
-
-2️⃣1️⃣ What is OAuth2PasswordBearer?
-
-Answer:
-It extracts the Bearer token from the Authorization header and supplies it to FastAPI dependencies.
-
-2️⃣2️⃣ Why does OAuth2 use form-data instead of JSON?
-
-Answer:
-OAuth2 specification mandates application/x-www-form-urlencoded for credentials, not JSON.
-
-2️⃣3️⃣ Why use OAuth2PasswordRequestForm instead of Pydantic?
-
-Answer:
-Swagger UI and OAuth2PasswordBearer expect form-data fields (username, password), not JSON.
-
-2️⃣4️⃣ How do you protect routes using JWT?
-
-Answer:
-By validating the token inside a dependency using Depends(oauth2_scheme) before route execution.
-
-2️⃣5️⃣ What is the Authorization header format?
+### 23. Authorization header format
 Authorization: Bearer <JWT_TOKEN>
 
-🔴 Day-5: Error-Based Interview Questions (Very Important)
-2️⃣6️⃣ Why did you get 401 Unauthorized after login?
-
-Answer:
-Because the JWT token was not sent in the Authorization header or Swagger authorization was not done.
-
-2️⃣7️⃣ Why did Swagger show “Auth error: Unauthorized”?
-
-Answer:
-Because the Authorize button was not used or the Bearer token was missing/expired.
-
-2️⃣8️⃣ Why did FastAPI say:
-Form data requires "python-multipart"
-
-
-Answer:
-Because OAuth2 login uses form-data, which requires the python-multipart package.
-
-2️⃣9️⃣ Why did bcrypt throw version errors?
-
-Answer:
-Due to incompatibility between bcrypt, passlib, and Python 3.11 on Windows. Fixed by pinning stable versions.
-
-3️⃣0️⃣ Why did /profile return Not authenticated in browser?
-
-Answer:
-Because browsers do not send Authorization headers automatically.
-
-3️⃣1️⃣ Difference between 401 and 403?
-
-Answer:
-
-401 → Authentication problem
-
-403 → Authorization problem
-
-Perfect 👍
-Below is a clean, interview-ready README.md content covering Day-6 to Day-8, including concept questions + real errors you faced and their explanations.
-
-You can copy-paste this directly into README.md.
-
+yaml
+Copy code
 
 ---
 
-🚀 FastAPI Interview Preparation
+## ❌ Day-5: Real Errors (Interview Gold)
 
-Day-6 to Day-8 (Auth → JWT → Project Refactor)
-
-
----
-
-📅 Day-6: Dependency Injection & Authorization Basics
-
-1️⃣ What is Dependency Injection in FastAPI?
-
-Answer:
-Dependency Injection (DI) allows FastAPI to automatically provide required objects (like authenticated users, headers, DB sessions) to endpoints using Depends().
-
-def get_current_user():
-    return {"username": "bhaskar"}
-
-@app.get("/profile")
-def profile(user=Depends(get_current_user)):
-    return user
-
-
----
-
-2️⃣ Why does FastAPI use Depends()?
-
-Answer:
-
-Code reuse
-
-Separation of concerns
-
-Cleaner and testable architecture
-
-
-
----
-
-3️⃣ Difference between Authentication and Authorization?
-
-Authentication	Authorization
-
-Who you are	What you can access
-Login	Role / Permission
-JWT / OAuth	Admin, User, RBAC
-
-
-
----
-
-4️⃣ How do you restrict access to an endpoint?
-
-Answer:
-By validating user role or permissions inside a dependency.
-
-def require_admin(user=Depends(get_current_user)):
-    if user["role"] != "admin":
-        raise HTTPException(status_code=403)
-
-
----
-
-❌ Common Day-6 Error
-
-Error: 401 Unauthorized
-Reason: Missing dependency or invalid token
-Fix: Ensure Depends() is used and token is passed correctly.
-
-
----
-
-📅 Day-7: JWT Authentication & Role-Based Access
-
-
----
-
-5️⃣ What is JWT?
-
-Answer:
-JWT (JSON Web Token) is a signed token used to securely transmit user identity between client and server.
-
-Structure:
-
-HEADER.PAYLOAD.SIGNATURE
-
-
----
-
-6️⃣ Why JWT is stateless?
-
-Answer:
-The server does not store sessions. All user data is inside the token.
-
-
----
-
-7️⃣ What is OAuth2PasswordBearer?
-
-Answer:
-It tells FastAPI:
-
-Token comes from Authorization: Bearer <token>
-
-Used to extract JWT automatically
-
-
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
-
-
----
-
-8️⃣ Difference between 401 and 403?
-
-Code	Meaning
-
-401	Not authenticated
-403	Authenticated but forbidden
-
-
-
----
-
-9️⃣ How do you implement Admin-only access?
-
-Answer:
-
-def require_admin(user=Depends(get_current_user)):
-    if user["role"] != "admin":
-        raise HTTPException(status_code=403)
-
-
----
-
-❌ Real Day-7 Errors You Faced
-
-Error: python-multipart not installed
-
-Reason:
-OAuth2 login uses form data.
-
-Fix:
-
+### Error: Form data requires python-multipart
+**Fix**
 pip install python-multipart
 
+markdown
+Copy code
 
----
-
-Error: bcrypt has no attribute __about__
-
-Reason:
-Version conflict between bcrypt and passlib.
-
-Fix:
-
+### Error: bcrypt has no attribute __about__
+**Fix**
 pip install bcrypt==4.0.1 passlib==1.7.4
 
+yaml
+Copy code
+
+### Error: Swagger shows Unauthorized after login
+**Reason**
+Token not applied using Authorize button.
 
 ---
 
-Error: Swagger shows Unauthorized after login
+## 🟣 Day-6: Database & SQLAlchemy
 
-Reason:
-Token not applied via Authorize button.
+### 24. Why SQLAlchemy?
+ORM to interact with DB using Python objects.
 
-Fix:
-Click Authorize → Paste Bearer token → Authorize
+### 25. What is a DB session?
+Manages database transactions.
 
-
----
-
-📅 Day-8: Project Refactor & APIRouter
-
+### Error: UserCreate has no attribute 'mail'
+**Fix**
+Use `user.email` instead of `user.mail`.
 
 ---
 
-🔟 Why refactor FastAPI projects?
+## 🟤 Day-7: CRUD Layer
 
-Answer:
+### 26. Why separate CRUD logic?
+- Clean architecture
+- Reusability
+- Testability
 
-Maintainability
-
-Scalability
-
-Industry-standard structure
-
-Interview expectation
-
-
+### Error: create_user() missing arguments
+**Fix**
+Align CRUD function signature with schema fields.
 
 ---
 
-1️⃣1️⃣ What is APIRouter?
+## 🔵 Day-8: Project Refactor & APIRouter
 
-Answer:
-APIRouter helps split routes into multiple files.
+### 27. What is APIRouter?
+Splits routes into multiple files.
 
-router = APIRouter()
+### 28. What should main.py contain?
+- App initialization
+- Router registration
+- No business logic
 
-@router.get("/profile")
-def profile():
-    pass
-
-
----
-
-1️⃣2️⃣ How do you register routers?
-
-Answer:
-
-app.include_router(auth.router)
-
-
----
-
-1️⃣3️⃣ What should main.py contain after refactor?
-
-Answer:
-ONLY:
-
-App initialization
-
-Router registration
-
-Health/root endpoints
-
-
-❌ No business logic
-❌ No auth logic
-
-
----
-
-1️⃣4️⃣ Why separate core, api, models?
-
-Folder	Responsibility
-
-core	Config, security
-api	Routes
-models	Schemas
-
-
-
----
-
-❌ Day-8 Git Errors & Fixes
-
-Error: Could not import module "main"
-
-Reason:
-main.py moved inside app/
-
-Fix:
-
+### Git Error: Could not import module "main"
+**Fix**
 uvicorn app.main:app --reload
 
+yaml
+Copy code
 
 ---
 
-Error: deleted: main.py
+## 🟢 Day-9: Authentication Debugging
 
-Reason:
-You moved main.py into app/
-
-Fix:
-
-git add app
-git commit -m "Refactor project structure"
-
+### 29. Why login works but protected route fails?
+Token not sent in Authorization header.
 
 ---
 
-Error: fatal: pathspec did not match
+## 🟡 Day-10: Login Endpoint
 
-Reason:
-File path changed after refactor.
+### 30. What happens during login?
+- Validate credentials
+- Create JWT
+- Return token
 
-Fix:
-
-git status
-git add app/
-
-
----
-
-🧠 Interview Power Questions (Direct)
-
-❓ Why FastAPI over Django/Flask?
-
-Async support
-
-Automatic docs
-
-Type safety
-
-Faster performance
-
-
+### Error: Invalid credentials
+**Reason**
+Password compared without hashing.
 
 ---
 
-❓ How would you scale this project?
+## 🔵 Day-11: get_current_user Dependency
 
-Database layer
+### 31. What is get_current_user?
+Extracts JWT, decodes it, and fetches user from DB.
 
-Pagination
+### Error: get_current_user not defined
+**Fix**
+Import dependency properly.
 
-Background tasks
+---
 
-Caching 
+## 🔴 Day-12: Authorization & Roles
+
+### 32. How are routes protected?
+Using:
+Depends(get_current_user)
+
+yaml
+Copy code
+
+### Authentication vs Authorization
+| Authentication | Authorization |
+|----------------|--------------|
+| Who you are | What you can access |
+
+---
+
+## 🟠 Day-13: Refresh Tokens
+
+### 33. Why refresh tokens?
+Generate new access tokens without re-login.
+
+### What if refresh token expires?
+User must login again.
+
+---
+
+## 🔵 Day-14: Debugging Skills
+
+### Biggest skill learned?
+Reading stack traces and fixing schema/CRUD mismatches.
+
+### Error: unexpected keyword argument
+**Fix**
+Align schema and CRUD parameters.
+
+---
+
+## 🏁 Day-15: Final Integration
+
+### What was completed?
+- Registration
+- Login
+- JWT auth
+- Refresh token
+- Protected routes
+- Clean architecture
+
+### Is Day-15 final?
+Final foundation day before advanced backend topics.
+
+---
+
+## 🎯 Interview Power Questions
+
+### Why FastAPI over Flask/Django?
+- Async support
+- Automatic docs
+- Type safety
+- High performance
+
+### How would you scale this project?
+- PostgreSQL
+- Alembic migrations
+- RBAC
+- Redis caching
+- Docker & deployment
+
+---
