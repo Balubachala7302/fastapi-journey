@@ -1,5 +1,13 @@
-from datetime import timedelta
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
-SECRET_KEY = "super-secret-key"   # later → env variable
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
+class Settings(BaseSettings):
+    SECRET_KEY: str
+    ALGORITHM: str
+    ACCESS_TOKEN_EXPIRE_MINUTES: int
+    DATABASE_URL: str
+
+    model_config = SettingsConfigDict(
+        env_file=".env"
+    )
+
+settings = Settings()

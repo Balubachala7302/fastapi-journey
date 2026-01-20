@@ -5,9 +5,12 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 
-from app.core.config import SECRET_KEY, ALGORITHM
+from app.core.config import settings
 from app.db.database import get_db
 from app.db import crud
+
+SECRET_KEY=settings.SECRET_KEY
+ALGORITHM=settings.ALGORITHM
 
 # -------------------------------
 # Password hashing
