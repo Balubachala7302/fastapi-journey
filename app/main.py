@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 
 from app.db.database import engine, get_db
 from app.db import models, crud
-from app.core.config import ACCESS_TOKEN_EXPIRE_MINUTES
+from app.core.config import settings
 from app.core.security import create_access_token, get_current_user
 from app.db.schemas import UserCreate,UserOut
 from app.db.schemas import PostCreate,PostOut

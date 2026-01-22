@@ -4,7 +4,7 @@ from fastapi.security import OAuth2PasswordRequestForm,OAuth2PasswordBearer
 from app.core.security import get_current_user
 from sqlalchemy.orm import Session
 
-from app.core.config import ACCESS_TOKEN_EXPIRE_MINUTES,SECRET_KEY,ALGORITHM
+from app.core.config import settings
 from app.core.security import create_access_token
 from app.db.database import get_db
 from app.db import crud
@@ -46,7 +46,7 @@ def login(
 
     access_token = create_access_token(
         data={"sub": user.email},
-        expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+        expires_delta=timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     )
 
     return {
@@ -92,7 +92,7 @@ def login(
 @router.post("/refresh")
 def refresh_access_token(token: str = Depends(oauth2_scheme)):
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=settings.ALGORITHM)
 
         # Ensure it's a refresh token
         if payload.get("type") != "refresh":
