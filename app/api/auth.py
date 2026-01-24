@@ -119,7 +119,7 @@ def refresh_access_token(token: str = Depends(oauth2_scheme)):
 
 @router.post("/logout")
 def logout(refresh_token: str, db: Session = Depends(get_db)):
-    crud.delete_refresh_token(db, refresh_token)
+    crud.blacklisted_token(db, refresh_token)
     return {"message": "Logged out successfully"}
 
 @router.get("/me")

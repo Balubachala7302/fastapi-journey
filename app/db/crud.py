@@ -107,3 +107,12 @@ def delete_refresh_token(db,token:str):
         db.delete(db_token)
         db.commit()
 
+def blacklist_token(db: Session, token: str):
+    db_token = models.BlacklistedToken(token=token)
+    db.add(db_token)
+    db.commit()
+
+def is_token_blacklisted(db: Session, token: str) -> bool:
+    return db.query(models.BlacklistedToken)\
+             .filter(models.BlacklistedToken.token == token)\
+             .first() is not None
