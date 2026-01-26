@@ -84,10 +84,11 @@ def delete_post(db:Session,post:models.Post):
     db.commit()
 
 
-def create_refresh_token(db,token:str,user_id:int):
+def create_refresh_token(db,token:str,user_id:int,device):
     db_token=models.RefreshToken(
         token=token,
-        user_id=user_id
+        user_id=user_id,
+        device=device
     )
     db.add(db_token)
     db.commit()
@@ -116,3 +117,20 @@ def is_token_blacklisted(db: Session, token: str) -> bool:
     return db.query(models.BlacklistedToken)\
              .filter(models.BlacklistedToken.token == token)\
              .first() is not None
+
+
+def revoke_refresh_token(db, token):
+    db_token = db.query(models.RefreshToken)\
+        .filter(models.RefreshToken.token == token)\
+        .first()
+    if db_token:
+        db_token.is_revoked = True
+        db.commit()
+
+
+def is_refresh_token_valid(db, token):
+    return db.query(models.RefreshToken)\
+        .filter(
+            models.RefreshToken.token == token,
+            models.RefreshToken.is_revoked == False
+        ).first()

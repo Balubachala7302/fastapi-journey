@@ -90,32 +90,38 @@ def login(
 
 
 @router.post("/refresh")
-def refresh_access_token(token: str = Depends(oauth2_scheme)):
-    try:
-        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=settings.ALGORITHM)
+def refresh_token(
+    refresh_token: str,
+    db: Session = Depends(get_db)
+):
+    db_token = crud.is_refresh_token_valid(db, refresh_token)
 
-        # Ensure it's a refresh token
-        if payload.get("type") != "refresh":
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid token type"
-            )
+    if not db_token:
+        raise HTTPException(status_code=401, detail="Invalid refresh token")
 
-        email = payload.get("sub")
-        if email is None:
-            raise HTTPException(status_code=401, detail="Invalid token")
+    # revoke old
+    crud.revoke_refresh_token(db, refresh_token)
 
-        new_access_token = create_access_token(
-            data={"sub": email}
-        )
+    # issue new
+    new_refresh = create_refresh_token(
+        data={"sub": db_token.user_id, "type": "refresh"}
+    )
 
-        return {"access_token": new_access_token}
+    crud.create_refresh_token(
+        db,
+        new_refresh,
+        db_token.user_id,
+        db_token.device
+    )
 
-    except JWTError:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid refresh token"
-        )
+    access = create_access_token(
+        data={"sub": db_token.user_id, "type": "access"}
+    )
+
+    return {
+        "access_token": access,
+        "refresh_token": new_refresh
+    }
 
 @router.post("/logout")
 def logout(refresh_token: str, db: Session = Depends(get_db)):
