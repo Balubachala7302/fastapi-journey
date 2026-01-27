@@ -10,7 +10,7 @@ from app.db.database import get_db
 from app.db import crud
 from jose import JWTError,jwt
 from app.db.schemas import TokenResponse
-from app.core.security import create_access_token, create_refresh_token
+from app.core.security import create_access_token, create_refresh_token,blacklist_token
 
 router = APIRouter(
     prefix="/auth",
@@ -124,8 +124,9 @@ def refresh_token(
     }
 
 @router.post("/logout")
-def logout(refresh_token: str, db: Session = Depends(get_db)):
-    crud.blacklisted_token(db, refresh_token)
+def logout(token: str = Depends(oauth2_scheme)):
+    payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+    blacklist_token(token, payload["exp"])
     return {"message": "Logged out successfully"}
 
 @router.get("/me")

@@ -1,5 +1,7 @@
 from datetime import datetime, timedelta
 from typing import Optional
+import time
+from app.core.redis import redis_client
 
 from jose import JWTError, jwt
 from passlib.context import CryptContext
@@ -71,25 +73,17 @@ def create_refresh_token(data: dict):
 # AUTH DEPENDENCY (THIS WAS MISSING)
 # -------------------------
 def get_current_user(token: str = Depends(oauth2_scheme)):
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
-
-    try:
-        payload = jwt.decode(
-            token,
-            settings.SECRET_KEY,
-            algorithms=[settings.ALGORITHM],
+    if redis_client.exists(token):
+        raise HTTPException(
+            status_code=401,
+            detail="Token has been revoked"
         )
 
-        username: str | None = payload.get("sub")
+    payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+    return payload
 
-        if username is None:
-            raise credentials_exception
 
-        return username
-
-    except JWTError:
-        raise credentials_exception
+def blacklist_token(token: str,exp: int):
+    ttl=exp-int(time.time())
+    if ttl>0:
+        redis_client.setex(token, ttl,"blacklisted")
