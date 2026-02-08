@@ -6,11 +6,13 @@ from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.core.security import create_access_token
-from app.db.database import get_db
 from app.db import crud
 from jose import JWTError,jwt
 from app.db.schemas import TokenResponse
-from app.core.security import create_access_token, create_refresh_token,blacklist_token
+from app.core.security import create_access_token, create_refresh_token,blacklist_token,decode_refresh_token
+from app.db.crud import authenticate_user
+from app.api.deps import get_db
+from app.db.blacklist import is_token_blacklisted,blacklist_token
 
 router = APIRouter(
     prefix="/auth",
@@ -21,65 +23,20 @@ router = APIRouter(
 oauth2_scheme=OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 
-@router.post(
-    "/login",
-    response_model=TokenResponse
-)
-def login(
-    form_data: OAuth2PasswordRequestForm = Depends(),
-    db: Session = Depends(get_db)
-):
-    """
-    Authenticate user and return JWT token
-    """
-    user = crud.authenticate_user(
-        db=db,
-        email=form_data.username,
-        password=form_data.password
-    )
-
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid email or password"
-        )
-
-    access_token = create_access_token(
-        data={"sub": user.email},
-        expires_delta=timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-    )
-
-    return {
-        "access_token": access_token,
-        "token_type": "bearer"
-    }
-
-
-
-
 @router.post("/login")
-def login(
-    form_data: OAuth2PasswordRequestForm = Depends(),
-    db: Session = Depends(get_db)
-):
-    user = crud.authenticate_user(
-        db,
-        email=form_data.username,
-        password=form_data.password
-    )
-
+def login(form: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+    user = authenticate_user(db, form.username, form.password)
     if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid credentials"
-        )
+        raise HTTPException(status_code=401, detail="Invalid credentials")
 
     access_token = create_access_token(
-        data={"sub": user.email}
+        {"sub": user.email},
+        timedelta(minutes=15)
     )
 
     refresh_token = create_refresh_token(
-        data={"sub": user.email}
+        {"sub": user.email},
+        timedelta(days=7)
     )
 
     return {
@@ -92,42 +49,57 @@ def login(
 @router.post("/refresh")
 def refresh_token(
     refresh_token: str,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
-    db_token = crud.is_refresh_token_valid(db, refresh_token)
+    # 1️⃣ Check if refresh token is blacklisted
+    if is_token_blacklisted(db, refresh_token):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token revoked",
+        )
 
-    if not db_token:
-        raise HTTPException(status_code=401, detail="Invalid refresh token")
+    # 2️⃣ Decode refresh token
+    try:
+        payload = decode_refresh_token(refresh_token)
+    except Exception:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid refresh token",
+        )
 
-    # revoke old
-    crud.revoke_refresh_token(db, refresh_token)
+    user_id: int | None = payload.get("sub")
+    if user_id is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token payload",
+        )
 
-    # issue new
-    new_refresh = create_refresh_token(
-        data={"sub": db_token.user_id, "type": "refresh"}
-    )
+    # 3️⃣ Get user from DB
+    user = crud.get_user_by_id(db, user_id)
+    if not user or not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User not found or inactive",
+        )
 
-    crud.create_refresh_token(
-        db,
-        new_refresh,
-        db_token.user_id,
-        db_token.device
-    )
+    # 4️⃣ Blacklist old refresh token (important 🔥)
+    blacklist_token(db, refresh_token)
 
-    access = create_access_token(
-        data={"sub": db_token.user_id, "type": "access"}
+    # 5️⃣ Create new access token
+    access_token = create_access_token(
+        data={"sub": user.id}
     )
 
     return {
-        "access_token": access,
-        "refresh_token": new_refresh
+        "access_token": access_token,
+        "token_type": "bearer",
     }
 
 @router.post("/logout")
-def logout(token: str = Depends(oauth2_scheme)):
-    payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
-    blacklist_token(token, payload["exp"])
-    return {"message": "Logged out successfully"}
+def logout(token: str,
+           db:Session=Depends(get_db)):
+    blacklist_token(db,refresh_token)
+    return{"message":"Logged out successfully"}
 
 @router.get("/me")
 def get_me(current_user=Depends(get_current_user)):

@@ -9,6 +9,7 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 
 from app.core.config import settings
+from app.db.blacklist import is_token_blacklisted,blacklist_token
 
 # Password hashing
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -54,11 +55,14 @@ def create_access_token(
     return encoded_jwt
 
 
-def create_refresh_token(data: dict):
+def create_refresh_token(data: dict,expires_delta:timedelta):
     to_encode = data.copy()
 
-    expire = datetime.utcnow() + timedelta(days=7)  # refresh token valid 7 days
-    to_encode.update({"exp": expire})
+    expire = datetime.utcnow() + expires_delta
+    to_encode.update({
+        "exp":expire,
+        "type":"refresh"
+    })
 
     encoded_jwt = jwt.encode(
         to_encode,
@@ -87,3 +91,13 @@ def blacklist_token(token: str,exp: int):
     ttl=exp-int(time.time())
     if ttl>0:
         redis_client.setex(token, ttl,"blacklisted")
+
+
+# app/core/security.py
+def decode_refresh_token(token: str):
+    payload = jwt.decode(
+        token,
+        settings.SECRET_KEY,
+        algorithms=[settings.ALGORITHM],
+    )
+    return payload
