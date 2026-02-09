@@ -16,7 +16,7 @@ from fastapi import Request
 
 models.Base.metadata.create_all(bind=engine)
 
-app = FastAPI(title="FastAPI Journey", version="0.1.0")
+app = FastAPI(title=settings.APP_NAME, version="1.0.0",description="FastAPI backend with JWT authentication")
 
 app.include_router(auth.router)
 app.include_router(users.router)
