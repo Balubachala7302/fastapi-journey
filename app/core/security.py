@@ -8,8 +8,10 @@ from passlib.context import CryptContext
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 
-from app.core.config import settings
+from app.core.config import get_settings
 from app.db.blacklist import is_token_blacklisted,blacklist_token
+
+settings=get_settings
 
 # Password hashing
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")

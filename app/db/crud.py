@@ -1,7 +1,10 @@
 from sqlalchemy.orm import Session
 from app.db import models
-from app.db.schemas import UserCreate
+from app.db.schemas import UserCreate 
+from sqlalchemy import Column,Integer,String
+from app.db.database import Base
 from app.core.security import hash_password,verify_password
+from app.db.models import BlacklistedToken
 
 
 def create_user(db: Session, user: UserCreate):

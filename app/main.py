@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 
 from app.db.database import engine, get_db
 from app.db import models, crud
-from app.core.config import settings
+from app.core.config import get_settings
 from app.core.security import create_access_token, get_current_user
 from app.db.schemas import UserCreate,UserOut
 from app.db.schemas import PostCreate,PostOut
@@ -15,6 +15,7 @@ from fastapi.responses import JSONResponse
 from fastapi import Request
 
 models.Base.metadata.create_all(bind=engine)
+settings=get_settings()
 
 app = FastAPI(title=settings.APP_NAME, version="1.0.0",description="FastAPI backend with JWT authentication")
 

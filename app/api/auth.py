@@ -4,7 +4,7 @@ from fastapi.security import OAuth2PasswordRequestForm,OAuth2PasswordBearer
 from app.core.security import get_current_user
 from sqlalchemy.orm import Session
 
-from app.core.config import settings
+from app.core.config import get_settings
 from app.core.security import create_access_token
 from app.db import crud
 from jose import JWTError,jwt
@@ -19,6 +19,7 @@ router = APIRouter(
     tags=["Authentication"]
 )
 
+settings=get_settings()
 
 oauth2_scheme=OAuth2PasswordBearer(tokenUrl="/auth/login")
 
