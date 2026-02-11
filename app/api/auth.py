@@ -24,9 +24,16 @@ settings=get_settings()
 oauth2_scheme=OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 
+
 @router.post("/login")
 def login(form: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     user = authenticate_user(db, form.username, form.password)
+    access_token=create_access_token(
+    data={
+        "sub":str(user.id),
+        "role":user.role
+    }
+)
     if not user:
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
@@ -95,6 +102,8 @@ def refresh_token(
         "access_token": access_token,
         "token_type": "bearer",
     }
+
+
 
 @router.post("/logout")
 def logout(token: str,

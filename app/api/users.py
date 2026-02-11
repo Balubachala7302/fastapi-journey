@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends,HTTPException,status
 from app.db.database import get_db
 from sqlalchemy.orm import session
 from app.db import crud,schemas
+from app.core.permissions import require_role
 
 router = APIRouter(prefix="/users",tags=["Users"])
 
@@ -19,3 +20,9 @@ def register_user(
             detail="Email already registered"
         )
     return crud.create_user(db,user)
+
+@router.get("/admin/dashboard")
+def admin_dashboard(
+    current_user=Depends(require_role("admin"))
+):
+    return{"message":"Welcome admin"}

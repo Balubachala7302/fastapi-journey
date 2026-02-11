@@ -2,12 +2,12 @@ from pydantic import BaseModel, EmailStr
 from pydantic import ConfigDict
 
 class UserCreate(BaseModel):
-    username: str
+    id: str
     email: EmailStr
     password: str
 
 class UserOut(BaseModel):
-    username: str
+    id: str
     email: EmailStr
     role: str
 
