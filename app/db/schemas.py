@@ -1,31 +1,47 @@
-from pydantic import BaseModel, EmailStr
-from pydantic import ConfigDict
+from pydantic import BaseModel, EmailStr, ConfigDict
+
+
+# =========================
+# USER SCHEMAS
+# =========================
 
 class UserCreate(BaseModel):
-    id: str
+    username: str
     email: EmailStr
     password: str
 
+
 class UserOut(BaseModel):
-    id: str
+    id: int
+    username: str
     email: EmailStr
     role: str
 
-    class config:
-        from_attributes=True
+    model_config = ConfigDict(from_attributes=True)
 
+
+# =========================
+# POST SCHEMAS
+# =========================
 
 class PostCreate(BaseModel):
     title: str
     content: str
 
+
 class PostOut(BaseModel):
     id: int
     title: str
     content: str
+    owner_id: int
 
-    model_config=ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True)
+
+
+# =========================
+# TOKEN SCHEMAS
+# =========================
 
 class TokenResponse(BaseModel):
-    access_token:str
-    token_type:str
+    access_token: str
+    token_type: str

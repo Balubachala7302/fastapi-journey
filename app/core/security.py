@@ -10,6 +10,7 @@ from fastapi.security import OAuth2PasswordBearer
 
 from app.core.config import get_settings
 from app.db.blacklist import is_token_blacklisted,blacklist_token
+from app.api.deps import get_current_user
 
 settings=get_settings
 
@@ -103,3 +104,13 @@ def decode_refresh_token(token: str):
         algorithms=[settings.ALGORITHM],
     )
     return payload
+
+def require_role(required_role: str):
+    def role_checker(current_user = Depends(get_current_user)):
+        if current_user.role != required_role:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Not enough permissions"
+            )
+        return current_user
+    return role_checker
