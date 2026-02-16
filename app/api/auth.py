@@ -1,7 +1,7 @@
 from datetime import timedelta
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm,OAuth2PasswordBearer 
-from app.core.security import get_current_user
+from app.api.deps import get_current_user
 from sqlalchemy.orm import Session
 
 from app.core.config import get_settings

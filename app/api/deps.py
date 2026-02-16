@@ -1,36 +1,56 @@
-from app.db.database import get_db
-from fastapi import Depends,HTTPException
+from fastapi import Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 from app.db.database import SessionLocal
-from fastapi.security import OAuth2PasswordBearer
-from app.core.redis import redis_client
-from app.core.config import get_settings
-from jose import JWTError, jwt
+from app.core.security import decode_access_token
+from app.db import models
+from app.core.redis import redis_client  # if using redis
 
-settings=get_settings()
-
-# OAuth2 scheme
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
-def get_current_user(token: str = Depends(oauth2_scheme)):
-    if redis_client.exists(token):
-        raise HTTPException(
-            status_code=401,
-            detail="Token has been revoked"
-        )
-
-    payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
-    return payload
-
-def get_current_active_user(
-    user = Depends(get_current_user)
-):
-    return user
-
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
 
 
 def get_db():
-    db=SessionLocal()
+    db = SessionLocal()
     try:
         yield db
     finally:
         db.close()
+
+
+def get_current_user(
+    token: str = Depends(oauth2_scheme),
+    db: Session = Depends(get_db),
+):
+    # Optional: Redis blacklist check
+    try:
+        if redis_client.exists(token):
+            raise HTTPException(
+                status_code=401,
+                detail="Token has been revoked"
+            )
+    except Exception:
+        pass  # ignore if redis not running
+
+    payload = decode_access_token(token)
+
+    user = db.query(models.User).filter(
+        models.User.id == payload.get("user_id")
+    ).first()
+
+    if not user:
+        raise HTTPException(
+            status_code=404,
+            detail="User not found"
+        )
+
+    return user
+
+def require_role(required_role: str):
+    def role_checker(current_user = Depends(get_current_user)):
+        if current_user.role != required_role:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Not enough permissions"
+            )
+        return current_user
+    return role_checker
