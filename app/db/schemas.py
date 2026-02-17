@@ -5,6 +5,11 @@ from pydantic import BaseModel, EmailStr, ConfigDict
 # USER SCHEMAS
 # =========================
 
+class LoginSchema(BaseModel):
+    email:EmailStr
+    password:str
+
+
 class UserCreate(BaseModel):
     username: str
     email: EmailStr

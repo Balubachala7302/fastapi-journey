@@ -8,11 +8,13 @@ from app.core.config import get_settings
 from app.core.security import create_access_token
 from app.db import crud
 from jose import JWTError,jwt
-from app.db.schemas import TokenResponse
+from app.db.schemas import TokenResponse,LoginSchema
 from app.core.security import create_access_token, create_refresh_token,blacklist_token,decode_refresh_token
 from app.db.crud import authenticate_user
 from app.api.deps import get_db
 from app.db.blacklist import is_token_blacklisted,blacklist_token
+from app.services.auth_service import login_user
+
 
 router = APIRouter(
     prefix="/auth",
@@ -26,32 +28,8 @@ oauth2_scheme=OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 
 @router.post("/login")
-def login(form: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
-    user = authenticate_user(db, form.username, form.password)
-    access_token=create_access_token(
-    data={
-        "sub":str(user.id),
-        "role":user.role
-    }
-)
-    if not user:
-        raise HTTPException(status_code=401, detail="Invalid credentials")
-
-    access_token = create_access_token(
-        {"sub": user.email},
-        timedelta(minutes=15)
-    )
-
-    refresh_token = create_refresh_token(
-        {"sub": user.email},
-        timedelta(days=7)
-    )
-
-    return {
-        "access_token": access_token,
-        "refresh_token": refresh_token,
-        "token_type": "bearer"
-    }
+def login(data: LoginSchema, db: Session = Depends(get_db)):
+    return login_user(db, data.email, data.password)
 
 
 @router.post("/refresh")
