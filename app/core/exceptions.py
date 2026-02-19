@@ -1,15 +1,10 @@
-from fastapi import HTTPException, status
+from fastapi import HTTPException
 
-class AppException(HTTPException):
-    def __init__(self, status_code: int, detail: str):
-        super().__init__(status_code=status_code, detail=detail)
-
-
-class NotFoundException(AppException):
+class NotFoundException(HTTPException):
     def __init__(self, detail="Resource not found"):
-        super().__init__(status.HTTP_404_NOT_FOUND, detail)
+        super().__init__(status_code=404, detail=detail)
 
 
-class UnauthorizedException(AppException):
+class UnauthorizedException(HTTPException):
     def __init__(self, detail="Unauthorized"):
-        super().__init__(status.HTTP_401_UNAUTHORIZED, detail)
+        super().__init__(status_code=401, detail=detail)
