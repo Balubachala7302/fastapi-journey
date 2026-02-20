@@ -10,6 +10,9 @@ from app.core.response import error_response
 from app.api.deps import get_current_user
 from app.db.schemas import UserCreate, UserOut, PostCreate, PostOut
 from app.api import auth, users
+from app.core.logger import logger
+import time
+
 
 # -------------------------------
 # DB Setup
@@ -23,6 +26,22 @@ app = FastAPI(
     version="1.0.0",
     description="FastAPI backend with JWT authentication"
 )
+
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    start_time = time.time()
+
+    response = await call_next(request)
+
+    process_time = round(time.time() - start_time, 4)
+
+    logger.info(
+        f"{request.method} {request.url.path} | "
+        f"Status: {response.status_code} | "
+        f"Time: {process_time}s"
+    )
+
+    return response
 
 # -------------------------------
 # Global Exception Handlers
@@ -45,6 +64,10 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
+    logger.error(
+        f"Unhandled error on {request.method} {request.url.path}: {str(exc)}"
+    )
+
     return error_response(
         message="Internal Server Error",
         status_code=500
