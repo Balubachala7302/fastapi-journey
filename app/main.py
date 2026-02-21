@@ -22,9 +22,23 @@ models.Base.metadata.create_all(bind=engine)
 settings = get_settings()
 
 app = FastAPI(
-    title=settings.APP_NAME,
+    title="FastAPI Production Backend",
     version="1.0.0",
-    description="FastAPI backend with JWT authentication"
+    description="""
+    Production-ready FastAPI backend with:
+
+    - JWT Authentication
+    - Refresh Tokens
+    - Redis Token Blacklisting
+    - Role-Based Access Control
+    - Service Layer Architecture
+    - Structured Logging
+    - Global Exception Handling
+    """,
+    contact={
+        "name": "Bala Bhaskar",
+        "email": "BalaBhaskar@gmail.com",
+    },
 )
 
 @app.middleware("http")
