@@ -1,5 +1,5 @@
 from pydantic import BaseModel, EmailStr, ConfigDict
-
+from typing import List
 
 # =========================
 # AUTH SCHEMAS
@@ -133,5 +133,27 @@ class AdminDashboardResponse(BaseModel):
 
 class MessageResponse(BaseModel):
     message: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+class PaginationMeta(BaseModel):
+    total: int
+    page: int
+    limit: int
+    total_pages: int
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class PaginatedPostData(BaseModel):
+    meta: PaginationMeta
+    items: List[PostOut]
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class PaginatedPostResponse(BaseModel):
+    message: str
+    data: PaginatedPostData
 
     model_config = ConfigDict(from_attributes=True)

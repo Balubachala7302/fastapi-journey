@@ -1,10 +1,13 @@
-from fastapi import FastAPI, Depends, HTTPException, status, Request
+from fastapi import FastAPI, Depends, HTTPException, status, Request,Query
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 from sqlalchemy.orm import Session
+from math import ceil
 
 from app.db.database import engine, get_db
+from app.db.schemas import PaginatedPostResponse
 from app.db import models, crud
+from app.core.response import success_response
 from app.core.config import get_settings
 from app.core.response import error_response
 from app.api.deps import get_current_user
@@ -128,12 +131,44 @@ def create_post(
     )
 
 
-@app.get("/posts/me", response_model=list[PostOut])
+@app.get(
+    "/posts/me",
+    response_model=PaginatedPostResponse,
+    summary="Get My Posts (Paginated + Sorted)",
+)
 def my_posts(
+    page: int = Query(1, ge=1),
+    limit: int = Query(10, ge=1, le=100),
+    title: str | None = None,
+    sort: str = Query("id"),
+    order: str = Query("desc"),
     db: Session = Depends(get_db),
-    user: models.User = Depends(get_current_user)
+    user = Depends(get_current_user)
 ):
-    return crud.get_posts_by_user(db, user.id)
+    total, posts = crud.get_posts_by_user_paginated(
+        db=db,
+        user_id=user.id,
+        page=page,
+        limit=limit,
+        title=title,
+        sort=sort,
+        order=order
+    )
+
+    total_pages = ceil(total / limit) if total > 0 else 1
+
+    return success_response(
+        data={
+            "meta": {
+                "total": total,
+                "page": page,
+                "limit": limit,
+                "total_pages": total_pages
+            },
+            "items": posts
+        },
+        message="Posts fetched successfully"
+    )
 
 
 @app.delete("/posts/{post_id}")

@@ -137,3 +137,37 @@ def is_refresh_token_valid(db, token):
             models.RefreshToken.token == token,
             models.RefreshToken.is_revoked == False
         ).first()
+
+def get_posts_by_user_paginated(
+    db: Session,
+    user_id: int,
+    page: int,
+    limit: int,
+    title: str | None = None,
+    sort: str = "id",
+    order: str = "desc"
+):
+    query = db.query(models.Post).filter(models.Post.owner_id == user_id)
+
+    # Filtering
+    if title:
+        query = query.filter(models.Post.title.ilike(f"%{title}%"))
+
+    # Sorting
+    sort_column = getattr(models.Post, sort, models.Post.id)
+
+    if order == "desc":
+        query = query.order_by(sort_column.desc())
+    else:
+        query = query.order_by(sort_column.asc())
+
+    total = query.count()
+
+    posts = (
+        query
+        .offset((page - 1) * limit)
+        .limit(limit)
+        .all()
+    )
+
+    return total, posts
