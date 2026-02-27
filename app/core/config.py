@@ -2,7 +2,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 from functools import lru_cache
 
 class Settings(BaseSettings):
-    APP_NAME:str="FastAPI Journey"
+    APP_NAME:str="FastAPI Backend"
     DEBUG:bool=False
 
     SECRET_KEY: str
