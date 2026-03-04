@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, HTTPException, status, Request,Query
+from fastapi import FastAPI, Depends, HTTPException, status, Request,Query,BackgroundTasks
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 from sqlalchemy.orm import Session
@@ -194,3 +194,11 @@ def delete_post(
     crud.delete_post(db, post_id)
 
     return {"message": "Post deleted successfully"}
+
+@app.get("/send-email")
+def send_email(background_tasks:BackgroundTasks):
+    def fake_email():
+        print("Sending email....")
+    background_tasks.add_task(fake_email)
+
+    return {"message":"Email will be sent in background"}
