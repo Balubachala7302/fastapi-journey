@@ -15,6 +15,7 @@ from app.db.schemas import UserCreate, UserOut, PostCreate, PostOut
 from app.api import auth, users
 from app.core.logger import logger
 import time
+from app.tasks import send_email_task
 
 
 # -------------------------------
@@ -202,3 +203,9 @@ def send_email(background_tasks:BackgroundTasks):
     background_tasks.add_task(fake_email)
 
     return {"message":"Email will be sent in background"}
+
+@app.post("/send-email")
+def send_email(email:str):
+    send_email_task.delay(email)
+    return {"message":"Email task queued"}
+
