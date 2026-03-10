@@ -10,6 +10,7 @@ from app.db.schemas import TokenResponse, LoginSchema
 from app.db import crud
 from app.db.blacklist import is_token_blacklisted, blacklist_token
 from app.services.auth_service import login_user
+from app.core.rate_limiter import rate_limiter
 
 
 router = APIRouter(
@@ -144,3 +145,10 @@ def get_me(
         },
         message="User fetched successfully"
     )
+
+
+@router.post("/login")
+def login(data: LoginSchema,
+          db: Session = Depends(get_db),
+          _: None = Depends(rate_limiter)):
+    return login_user(db, data.email, data.password)
