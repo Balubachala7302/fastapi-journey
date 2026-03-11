@@ -1,20 +1,27 @@
-from fastapi import FastAPI, Depends, HTTPException, status, Request,Query,BackgroundTasks
+from fastapi import FastAPI, Depends, HTTPException, status, Request, Query, BackgroundTasks
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 from sqlalchemy.orm import Session
 from math import ceil
+import time
 
 from app.db.database import engine, get_db
-from app.db.schemas import PaginatedPostResponse
 from app.db import models, crud
-from app.core.response import success_response
-from app.core.config import get_settings
-from app.core.response import error_response
-from app.api.deps import get_current_user
-from app.db.schemas import UserCreate, UserOut, PostCreate, PostOut
+from app.db.schemas import (
+    PaginatedPostResponse,
+    UserCreate,
+    UserOut,
+    PostCreate,
+    PostOut
+)
+
 from app.api import auth, users
+from app.api.deps import get_current_user
+
+from app.core.config import get_settings
+from app.core.response import success_response, error_response
 from app.core.logger import logger
-import time
+
 from app.tasks import send_email_task
 
 
@@ -25,6 +32,10 @@ models.Base.metadata.create_all(bind=engine)
 
 settings = get_settings()
 
+
+# -------------------------------
+# FastAPI App
+# -------------------------------
 app = FastAPI(
     title="FastAPI Production Backend",
     version="1.0.0",
@@ -45,6 +56,23 @@ app = FastAPI(
     },
 )
 
+
+# -------------------------------
+# Startup / Shutdown Events
+# -------------------------------
+@app.on_event("startup")
+async def startup_event():
+    logger.info("🚀 FastAPI application starting...")
+
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    logger.info("🛑 FastAPI application shutting down...")
+
+
+# -------------------------------
+# Request Logging Middleware
+# -------------------------------
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
     start_time = time.time()
@@ -60,6 +88,7 @@ async def log_requests(request: Request, call_next):
     )
 
     return response
+
 
 # -------------------------------
 # Global Exception Handlers
@@ -91,11 +120,13 @@ async def global_exception_handler(request: Request, exc: Exception):
         status_code=500
     )
 
+
 # -------------------------------
 # Include Routers
 # -------------------------------
 app.include_router(auth.router)
 app.include_router(users.router)
+
 
 # -------------------------------
 # Public Routes
@@ -135,7 +166,7 @@ def create_post(
 @app.get(
     "/posts/me",
     response_model=PaginatedPostResponse,
-    summary="Get My Posts (Paginated + Sorted)",
+    summary="Get My Posts (Paginated + Sorted)"
 )
 def my_posts(
     page: int = Query(1, ge=1),
@@ -144,8 +175,9 @@ def my_posts(
     sort: str = Query("id"),
     order: str = Query("desc"),
     db: Session = Depends(get_db),
-    user = Depends(get_current_user)
+    user: models.User = Depends(get_current_user)
 ):
+
     total, posts = crud.get_posts_by_user_paginated(
         db=db,
         user_id=user.id,
@@ -178,6 +210,7 @@ def delete_post(
     db: Session = Depends(get_db),
     user: models.User = Depends(get_current_user)
 ):
+
     post = crud.get_post_by_id(db, post_id)
 
     if not post:
@@ -196,16 +229,27 @@ def delete_post(
 
     return {"message": "Post deleted successfully"}
 
-@app.get("/send-email")
-def send_email(background_tasks:BackgroundTasks):
+
+# -------------------------------
+# Background Task Example
+# -------------------------------
+@app.get("/send-email/background")
+def send_email_background(background_tasks: BackgroundTasks):
+
     def fake_email():
-        print("Sending email....")
+        print("Sending email...")
+
     background_tasks.add_task(fake_email)
 
-    return {"message":"Email will be sent in background"}
+    return {"message": "Email will be sent in background"}
 
+
+# -------------------------------
+# Celery Task Example
+# -------------------------------
 @app.post("/send-email")
-def send_email(email:str):
-    send_email_task.delay(email)
-    return {"message":"Email task queued"}
+def send_email(email: str):
 
+    send_email_task.delay(email)
+
+    return {"message": "Email task queued"}
