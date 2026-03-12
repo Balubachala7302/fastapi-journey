@@ -1,237 +1,249 @@
-# 🚀 FastAPI Journey (Day 1 – Day 21)
+# 🚀 FastAPI Production Backend (Day 1 – Day 35 Journey)
 
-This repository documents my **hands-on FastAPI learning journey**, where I progressively built a **production-ready backend application** with authentication, authorization, database integration, JWT security, refresh tokens, token revocation, migrations, and best practices.
+![Python](https://img.shields.io/badge/Python-3.11-blue)
+![FastAPI](https://img.shields.io/badge/FastAPI-Production--Ready-green)
+![Docker](https://img.shields.io/badge/Docker-Enabled-blue)
+![Redis](https://img.shields.io/badge/Redis-Caching-red)
+![Celery](https://img.shields.io/badge/Celery-Background--Workers-darkgreen)
+![License](https://img.shields.io/badge/License-MIT-lightgrey)
 
-By **Day 21**, the project evolved from basics to **real-world backend architecture**.
+This repository documents my **35-day hands-on FastAPI learning journey**, where I progressively built a **production-ready backend system** with authentication, caching, background workers, containerization, and modern backend architecture.
 
----
-
-## 🛠 Tech Stack
-
-- Python 3.11  
-- FastAPI  
-- Uvicorn  
-- SQLAlchemy  
-- Alembic (migrations)  
-- SQLite  
-- Pydantic v2  
-- JWT (python-jose)  
-- Passlib (bcrypt)  
+By the end of this journey, the project evolved from simple endpoints into a **scalable backend architecture similar to modern SaaS systems**.
 
 ---
 
-## 📁 Project Structure
-app/ ├── api/ │   ├── auth.py │   ├── users.py │   ├── deps.py │ ├── core/ │   ├── config.py │   ├── security.py │   ├── logger.py │   ├── exceptions.py │   ├── response.py │ ├── db/ │   ├── crud.py │   ├── database.py │   ├── models.py │   ├── schemas.py │ ├── main.py │ alembic/ alembic.ini fastapi.db .env
+# 🧠 Key Highlights
+
+✔ JWT Authentication with Refresh Tokens  
+✔ Redis-based Token Blacklisting  
+✔ Role-Based Access Control (RBAC)  
+✔ Database Migrations with Alembic  
+✔ Background Workers with Celery + Redis  
+✔ API Rate Limiting  
+✔ Dockerized Deployment  
+✔ Gunicorn Production Server  
+✔ Structured Logging & Global Error Handling  
+✔ Pagination, Filtering, and Sorting APIs  
 
 ---
 
-## 📅 Day-wise Learning Breakdown
+# 🛠 Tech Stack
 
-### ✅ Day 1 – FastAPI Basics
-- What is FastAPI
-- Project setup
-- First FastAPI app
-- Running server with `uvicorn`
-- Root endpoint (`/`)
-
----
-
-### ✅ Day 2 – Routing & HTTP Methods
-- GET, POST endpoints
-- Path & query parameters
-- Request–response flow
-
----
-
-### ✅ Day 3 – Pydantic Schemas
-- Request body validation
-- Response models
-- `BaseModel` usage
+| Layer | Technology |
+|------|-------------|
+| Language | Python 3.11 |
+| API Framework | FastAPI |
+| Server | Uvicorn / Gunicorn |
+| ORM | SQLAlchemy |
+| Database | SQLite |
+| Migrations | Alembic |
+| Caching | Redis |
+| Background Jobs | Celery |
+| Containerization | Docker & Docker Compose |
+| Authentication | JWT (python-jose) |
+| Password Hashing | Passlib (bcrypt) |
+| Validation | Pydantic v2 |
 
 ---
 
-### ✅ Day 4 – Database Basics
-- SQLite introduction
-- SQLAlchemy setup
-- Engine & session creation
+# 🏗 System Architecture
+
+Client
+   │
+   ▼
+Gunicorn
+   │
+   ▼
+FastAPI Application
+   │
+   ├── PostgreSQL / SQLite (Database)
+   │
+   ├── Redis (Caching + Token Blacklist)
+   │
+   └── Celery Workers
+          │
+          └── Background Tasks (Emails, Jobs)
 
 ---
 
-### ✅ Day 5 – Models & Tables
-- SQLAlchemy ORM models
-- Table creation
-- Relationships basics
+# 📁 Project Structure
+
+app/
+│
+├── api/
+│   ├── auth.py
+│   ├── users.py
+│   └── deps.py
+│
+├── core/
+│   ├── config.py
+│   ├── security.py
+│   ├── redis.py
+│   ├── rate_limiter.py
+│   ├── logger.py
+│   ├── response.py
+│   └── exceptions.py
+│
+├── db/
+│   ├── database.py
+│   ├── models.py
+│   ├── schemas.py
+│   └── crud.py
+│
+├── services/
+│   ├── auth_service.py
+│   └── user_service.py
+│
+├── tasks/
+│   ├── celery_app.py
+│   └── tasks.py
+│
+└── main.py
+
+alembic/
+docker-compose.yml
+Dockerfile
+.env
 
 ---
 
-### ✅ Day 6 – CRUD Operations
-- Create & read users
-- Session handling
-- `crud.py` structure
+# 🔐 Authentication Flow
 
----
-
-### ✅ Day 7 – Password Security
-- Password hashing using `passlib`
-- Hash vs verify
-- Secure password storage
-
----
-
-### ✅ Day 8 – User Registration
-- `/register` endpoint
-- Email uniqueness validation
-- Database persistence
-
----
-
-### ✅ Day 9 – Authentication Basics
-- OAuth2PasswordBearer
-- Swagger auth flow
-- Handling 401 / 403 errors
-
----
-
-### ✅ Day 10 – Login Endpoint
-- `/login` endpoint
-- Email & password verification
-- JWT access token generation
-
----
-
-### ✅ Day 11 – JWT Tokens
-- JWT structure
-- `sub` claim usage
-- Token expiration handling
-
----
-
-### ✅ Day 12 – Authorization
-- Protecting routes
-- `Depends(get_current_user)`
-- Request lifecycle understanding
-
----
-
-### ✅ Day 13 – Refresh Tokens
-- Refresh token concept
-- `/refresh` endpoint
-- Issuing new access tokens
-
----
-
-### ✅ Day 14 – Debugging & Fixes
-- Schema mismatches
-- CRUD signature fixes
-- Reading stack traces properly
-
----
-
-### ✅ Day 15 – Authentication Integration 🎯
-- `get_current_user` dependency
-- Protected `/me` endpoint
-- End-to-end JWT authentication
-- Swagger authorization fully working
-
----
-
-### ✅ Day 16 – Code Refactor & Stability
-- Fixed import issues
-- Improved project structure
-- Removed circular dependencies
-- Cleaned authentication flow
-
----
-
-### ✅ Day 17 – Validation & Model Improvements
-- Pydantic field fixes
-- SQLAlchemy model alignment
-- Cleaner request/response handling
-
----
-
-### ✅ Day 18 – Database Polish
-- Boolean & column fixes
-- CRUD optimization
-- Better query structure
-
----
-
-### ✅ Day 19 – Token Blacklisting
-- Token revocation concept
-- Refresh token invalidation
-- Blacklist checks during refresh
-
----
-
-### ✅ Day 20 – Alembic & Token Revocation System
-- Alembic migrations setup
-- Database-driven token blacklist
-- Refresh token verification with DB
-- Production-level JWT security flow
-
----
-
-### ✅ Day 21 – Production Polish & Best Practices 🚀
-- Centralized exception handling
-- Consistent API response schema
-- Application logging (no `print`)
-- Environment-based configuration
-- Health check endpoint
-- Clean Swagger metadata
-
----
-
-## 🔐 Authentication Flow
-
-1. Register User
+### Register User
 
 POST /users/register
 
+### Login
 
-2. Login
+POST /auth/login
 
-POST /auth/login → returns access_token + refresh_token
+Returns:
+    |access_token
+    |refresh_token
 
+### Authorize
 
-3. Authorize in Swagger
+Authorization : Bearer <access_token>
 
-Authorization: Bearer <access_token>
+### Access Protected Route
 
+Get /me
 
-4. Access Protected Route
-
-GET /auth/me
-
-
-5. Refresh Token
+### Refresh Toke
 
 POST /auth/refresh
+### Logout
 
-
-6. Logout / Revoke Token
-
-Token added to blacklist
+Token is added to a **Redis blacklist** preventing reuse.
 
 ---
 
-## 🧪 Run the Project
+# ⚡ Features Implemented
 
-```bash
-# Activate virtual environment
-venv\Scripts\activate
+### Security
+- JWT authentication
+- Refresh token rotation
+- Token revocation
+- Role-based authorization
+- API rate limiting
 
-# Start server
-uvicorn app.main:app --reload
+### Backend Architecture
+- Dependency Injection
+- Service Layer Pattern
+- Clean API Router Design
+- Global Exception Handling
+- Structured Logging Middleware
 
-Swagger UI:
-https://127.0.0.1:8000/docs
+### Performance & Scaling
+- Redis caching
+- Pagination & filtering
+- Celery background workers
+- API rate limiting
 
-Key Learnings
-Real-world authentication & authorization
-JWT + refresh token security
-Token revocation strategy
-Database migrations with Alembic
-Debugging FastAPI like a backend developer
-Clean, scalable backend architecture
-Production-ready FastAPI practices
+### Production Setup
+- Docker containerization
+- Docker Compose orchestration
+- Gunicorn production server
+- Health check endpoint
+
+---
+
+# 🧪 Running the Application
+
+### Activate Virtual Environment
+
+    |venv\Scripts\activate
+
+
+### Run FastAPI Server
+
+    |uvicorn app.main:app --reload
+
+### Swagger Documentation:
+    |http://127.0.0.1:8000/docs
+
+
+---
+
+# 🐳 Running with Docker
+
+    |docker compose up --build
+
+This will start:
+
+- FastAPI Application
+- Redis Server
+- Celery Worker
+
+---
+
+# 📊 Learning Timeline
+
+| Phase | Focus |
+|------|------|
+| Day 1–10 | FastAPI fundamentals & authentication |
+| Day 11–20 | JWT security & database architecture |
+| Day 21–25 | production practices & clean architecture |
+| Day 26–30 | pagination, logging, API improvements |
+| Day 30–33 | Docker + Celery + Redis workers |
+| Day 34 | API rate limiting |
+| Day 35 | production hardening |
+
+---
+
+# 🎯 Key Backend Concepts Learned
+
+- REST API Design
+- Authentication & Authorization
+- Dependency Injection
+- Database Migrations
+- Token Revocation
+- Background Task Processing
+- Caching Strategies
+- Containerized Deployment
+- Production Logging
+- API Security
+
+---
+
+# 🏁 Project Status
+
+    |✔ FastAPI Backend Journey Completed (Day 1 – Day 35) ✔ Production-Ready Backend Architecture Implemented---
+
+# 👨‍💻 Author
+
+**Bala Bhaskar**
+
+Backend Developer | Python | FastAPI
+
+---
+
+# ⭐ Future Improvements
+
+- PostgreSQL integration
+- CI/CD pipelines
+- API versioning
+- Automated testing (pytest)
+- Kubernetes deployment
+
